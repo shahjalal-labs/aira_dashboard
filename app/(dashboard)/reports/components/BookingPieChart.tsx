@@ -35,7 +35,7 @@ const BookingPieChart = () => {
         <div className="w-full p-6 bg-white rounded-xl shadow-sm font-sans">
             <h2 className="text-xl font-bold text-[#1e293b] mb-6">Bookings by Category</h2>
 
-            <div className="w-full h-[300px] flex items-center justify-center">
+            <div className="w-full h-[279px] flex items-center justify-center">
                 {hasData ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>

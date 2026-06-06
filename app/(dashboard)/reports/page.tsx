@@ -8,11 +8,11 @@ const ReportsPage = () => {
   return (
     <div>
       <Stats></Stats>
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-8 mt-8">
         <div className="col-span-2 lg:col-span-1"><PlatformChart></PlatformChart></div>
         <div className="col-span-2 lg:col-span-1"><UserGrowthChart /></div>
       </div>
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-8 mt-6">
         <div className="col-span-2 lg:col-span-1"><BookingPieChart></BookingPieChart></div>
         <div className="col-span-2 lg:col-span-1"><TopListing /></div>
       </div>

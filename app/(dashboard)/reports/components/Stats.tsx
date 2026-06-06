@@ -17,7 +17,7 @@ const Stats = () => {
       <p className="text-[#555555] text-xs pb-4">
         Financial and operational insights
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div className="shadow-xl rounded-lg p-6 bg-white">
           <div className="flex justify-between items-center">
             <div>

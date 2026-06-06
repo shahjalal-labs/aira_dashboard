@@ -8,7 +8,7 @@ const TopListing = () => {
   console.log(data?.result);
   return (
     <div className="rounded-lg p-6 bg-white">
-      <h1 className="text-2xl font-medium">Top Performing Listings</h1>
+      <h1 className="text-xl font-medium">Top Performing Listings</h1>
       <div className="mt-4">
         {data?.result?.map((listing: any, index: number) => (
           <div
@@ -18,7 +18,7 @@ const TopListing = () => {
             <div className="flex items-center space-x-4">
               <h1 className="text-gray-500">#{index + 1}</h1>
               <div>
-                <h1 className="font-medium text-xl">{listing.title}</h1>
+                <h1 className="font-medium">{listing.title}</h1>
                 <h1 className="text-sm text-gray-500">
                   {listing.host?.fullName}
                 </h1>

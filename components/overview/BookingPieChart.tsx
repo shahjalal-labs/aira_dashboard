@@ -29,7 +29,7 @@ const chartConfig = {
   completed: {
     label: "Completed",
     color: "var(--chart-3)",
-   
+
   },
   Cancelleed: {
     label: "Cancelled",
@@ -41,7 +41,7 @@ const chartConfig = {
   },
   Confirmed: {
     label: "Confirmed",
-   color: "var(--chart-1)",
+    color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
 
@@ -58,27 +58,27 @@ export function BookingOverview() {
    */
   const chartData = overview
     ? [
-        {
-          name: "Completed",
-          value: overview.COMPLETED,
-          fill: "#22C35D",
-        },
-        {
-          name: "Cancelled",
-          value: overview.CANCELLED,
-          fill: "#FF2D55",
-        },
-        {
-          name: "Pending",
-          value: overview.PENDING,
-          fill: "#F7CD5F",
-        },
-        {
-          name: "Confirmed",
-          value: overview.CONFIRMED,
-          fill: "#3D8AF5",
-        },
-      ].filter(item => item.value > 0)
+      {
+        name: "Completed",
+        value: overview.COMPLETED,
+        fill: "#22C35D",
+      },
+      {
+        name: "Cancelled",
+        value: overview.CANCELLED,
+        fill: "#FF2D55",
+      },
+      {
+        name: "Pending",
+        value: overview.PENDING,
+        fill: "#F7CD5F",
+      },
+      {
+        name: "Confirmed",
+        value: overview.CONFIRMED,
+        fill: "#3D8AF5",
+      },
+    ].filter(item => item.value > 0)
     : [];
 
   return (
@@ -90,7 +90,7 @@ export function BookingOverview() {
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[289px]"
+          className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[279px]"
         >
           <PieChart>
             <ChartTooltip
@@ -101,7 +101,7 @@ export function BookingOverview() {
               data={chartData}
               dataKey="value"
               nameKey="name"
-               outerRadius="95%"
+              outerRadius="95%"
               innerRadius={0} // remove if you want a full pie instead of donut
             >
               <LabelList

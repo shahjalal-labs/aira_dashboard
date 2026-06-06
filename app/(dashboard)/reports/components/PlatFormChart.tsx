@@ -24,7 +24,7 @@ export default function PlatformChart() {
     // Guard clause for empty or missing data
     if (!apiData || apiData.length === 0) {
         return (
-            <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm flex items-center justify-center h-[400px] text-slate-400">
+            <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm flex items-center justify-center h-[279px] text-slate-400">
                 No revenue data available.
             </div>
         );
@@ -40,10 +40,10 @@ export default function PlatformChart() {
     });
 
     return (
-        <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm font-sans">
+        <div className="w-full max-w-6xl p-6 bg-white rounded-xl shadow-sm font-sans">
             <h2 className="text-xl font-bold text-[#1e293b] mb-6">Revenue & Fees</h2>
 
-            <div className="w-full h-[400px]">
+            <div className="w-full h-[279px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={validApiData}

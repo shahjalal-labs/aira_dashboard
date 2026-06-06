@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import HomeUser from "./user-management/components/HomeUser";
 import Overview from "@/components/overview/Overview";
 import { BookingOverview } from "@/components/overview/BookingPieChart";
+import PlatformChart from "./reports/components/PlatFormChart";
 
 export default function Home() {
   const [type, setType] = useState("monthly");
@@ -21,16 +22,16 @@ export default function Home() {
   }, [decoded, router]);
   return (
     <div>
-    <Overview></Overview>
+      <Overview></Overview>
       <div className="grid grid-cols-3 mt-8 gap-8">
         <div className="col-span-3 lg:col-span-2">
-          hello bunny hunny
+          <PlatformChart></PlatformChart>
         </div>
         <div className="col-span-3 lg:col-span-1">
-         <BookingOverview></BookingOverview>
+          <BookingOverview></BookingOverview>
         </div>
       </div>
-     <HomeUser></HomeUser>
+      <HomeUser></HomeUser>
     </div>
   );
 }
