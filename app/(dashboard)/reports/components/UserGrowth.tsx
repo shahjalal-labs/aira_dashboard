@@ -31,14 +31,23 @@ export default function UserGrowthChart() {
     );
   }
 
+  const currentMonthIndex = new Date().getMonth();
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Filter out future months that might be padded by the backend
+  const validApiData = apiData.filter(item => {
+    const idx = monthNames.indexOf(item.month);
+    return idx === -1 || idx <= currentMonthIndex;
+  });
+
   // Maps strictly over available data; ignores any months not present in the response
-  const transformedData = apiData.map((item, index) => {
+  const transformedData = validApiData.map((item, index) => {
     let monthlyNewUsers = 0;
     
     if (index === 0) {
       monthlyNewUsers = item.cumulativeUsers;
     } else {
-      const previousCumulative = apiData[index - 1].cumulativeUsers;
+      const previousCumulative = validApiData[index - 1].cumulativeUsers;
       // Calculate delta safely
       monthlyNewUsers = Math.max(0, item.cumulativeUsers - previousCumulative);
     }
@@ -97,9 +106,9 @@ export default function UserGrowthChart() {
             <Bar 
               dataKey="totalUsers" 
               name="Total Users"
-              fill="#1e2538" 
+              fill="#1e293b" 
               radius={[4, 4, 0, 0]} 
-              maxBarSize={32}
+              maxBarSize={24}
             />
 
             {/* Bright Blue Bars */}

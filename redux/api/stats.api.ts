@@ -37,7 +37,21 @@ export const statsApi = baseApi.injectEndpoints({
       }),
       providesTags: ["stats"],
     }),
+    platfromChat: builder.query({
+      query: () => ({
+        url: `/admin/reports/platform-chart`,
+        method: "GET",
+      }),
+      providesTags: ["stats"],
+    }),
+    bookingPieChart: builder.query({
+      query: () => ({
+        url: `/admin/reports/booking-pie-chart`,
+        method: "GET",
+      }),
+      providesTags: ["stats"],
+    }),
   }),
 });
 
-export const { useOverviewStatsQuery, useReviewStatsQuery, useReportStatsQuery, useTopListingQuery, useUserGrowthQuery } = statsApi;
+export const { useOverviewStatsQuery, useBookingPieChartQuery, usePlatfromChatQuery, useReviewStatsQuery, useReportStatsQuery, useTopListingQuery, useUserGrowthQuery } = statsApi;
