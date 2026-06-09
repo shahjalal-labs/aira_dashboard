@@ -50,8 +50,6 @@ export function BookingOverview() {
 
   const overview = data?.result?.bookingStatusPieChart;
 
-  console.log("overview", overview);
-
   /**
    * Derive pie data from API response
    * Zero-value services are excluded to avoid visual noise

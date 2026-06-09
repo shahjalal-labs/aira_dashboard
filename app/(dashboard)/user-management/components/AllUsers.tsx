@@ -130,7 +130,7 @@ const AllUsers = () => {
               </TableHead>
               <TableHead>ROLE</TableHead>
               <TableHead>STATUS</TableHead>
-              <TableHead>VERIFIED</TableHead>
+              {/* <TableHead>VERIFIED</TableHead> */}
               <TableHead>BOOKINGS</TableHead>
               <TableHead>JOINED</TableHead>
               <TableHead>ACTIONS</TableHead>
@@ -199,9 +199,9 @@ const AllUsers = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       {user?.userProfile?.subProfession || "N/A"}
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>{user?.bookingsCount}</TableCell>
                     <TableCell>
                       {user?.createdAt
