@@ -2,8 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import preview from "@/assets/Logo.png";
-import logo from "@/assets/Logo.png";
+import logo from "@/assets/authLogo.png";
 import { useAdminLoginMutation } from "@/redux/api/authApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoData from "@/components/Common/NoData";
 import { FaStar } from "react-icons/fa";
 import Pagination from "@/components/Common/Pagination";
-import { IoCheckmarkOutline } from "react-icons/io5";
+import { IoCheckmarkOutline, IoRestaurant } from "react-icons/io5";
 import {
   useAllListingsQuery,
   useListingStatsQuery,
@@ -52,7 +52,7 @@ const AllListings = () => {
       <div className="mb-12">
         <h1 className="text-xl font-medium">Listings</h1>
         <p className="text-[#555555] text-xs pb-4">Manage all listings</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div
             className={`flex justify-between items-center p-4 ${active === "" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
             onClick={() => setActive("")}
@@ -72,7 +72,7 @@ const AllListings = () => {
             onClick={() => setActive("HOUSE_RENTAL")}
           >
             <div>
-              <h4>Properties</h4>
+              <h4>House Rentals</h4>
               <h1 className="text-3xl pt-2 font-bold">
                 {stats?.result?.houseRentalCount}
               </h1>
@@ -107,6 +107,20 @@ const AllListings = () => {
             </div>
             <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
               <GiCruiser size={25}></GiCruiser>
+            </div>
+          </div>
+          <div
+            className={`flex justify-between items-center p-4 ${active === "RESTAURANT" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
+            onClick={() => setActive("RESTAURANT")}
+          >
+            <div>
+              <h4>Restaurants</h4>
+              <h1 className="text-3xl pt-2 font-bold">
+                {stats?.result?.restaurantCount}
+              </h1>
+            </div>
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
+              <IoRestaurant size={25}></IoRestaurant>
             </div>
           </div>
         </div>
@@ -199,6 +213,11 @@ const AllListings = () => {
                         {user?.type === "CAR_RENTAL" && (
                           <span className="bg-bprimary/10 text-bprimary px-2 py-1 rounded-full text-xs">
                             Car Rentals
+                          </span>
+                        )}
+                        {user?.type === "RESTAURANT" && (
+                          <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded-full text-xs">
+                            Restaurants
                           </span>
                         )}
                       </div>

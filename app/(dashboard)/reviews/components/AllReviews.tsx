@@ -10,7 +10,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 const AllReviews = () => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const { data } = useAllReviewsQuery({ page, searchTerm });
+  const { data, isLoading } = useAllReviewsQuery({ page, searchTerm });
 
   console.log(data?.result);
 
@@ -39,21 +39,41 @@ const AllReviews = () => {
                   <div className="flex items-center gap-1">
                     <h1>{review.reviewer?.fullName}</h1>
                     <FaArrowRightLong />
-                    <h1 className="text-gray-400">{review.target?.title || review.target?.name} • {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ""}</h1>
+                    <h1 className="text-gray-400">
+                      {review.target?.title || review.target?.name} •{" "}
+                      {review.createdAt
+                        ? new Date(review.createdAt).toLocaleDateString()
+                        : ""}
+                    </h1>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-red-500 text-center pt-12 text-4xl font-medium">No reviews found.</p>
+            <div>
+              {isLoading ? (
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  {[1, 2, 3].map((index) => (
+                    <div
+                      key={index}
+                      className="h-28 w-full bg-gray-200 rounded animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-red-500 text-center pt-12 text-4xl font-medium">
+                  No reviews found.
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>
-     <div className="flex justify-center mt-12">
-         {data?.result?.data?.length > 0 && (
-        <Pagination totalPage={totalPage} page={page} setPage={setPage} />
-      )}
-     </div>
+      <div className="flex justify-center mt-12">
+        {data?.result?.data?.length > 0 && (
+          <Pagination totalPage={totalPage} page={page} setPage={setPage} />
+        )}
+      </div>
     </div>
   );
 };

@@ -44,9 +44,9 @@ const AllUsers = () => {
   return (
     <div>
       <div className="mb-12">
-        <h1 className="text-xl font-medium">Dashboard</h1>
+        <h1 className="text-xl font-medium">Users</h1>
         <p className="text-[#555555] text-xs pb-4">
-          Platform revenue tracking metrics
+         Manage All Users
         </p>
         <div className="grid grid-cols-1  lg:grid-cols-3 gap-4">
           <div

@@ -119,7 +119,7 @@ const NavbarSlider = ({ isOpen, toggleSidebar }: SidebarProps) => {
                   alt="Aira Logo"
                   height={300}
                   width={300}
-                  className="h-20 w-20"
+                  className="h-24 w-24"
                   priority
                 />
                 

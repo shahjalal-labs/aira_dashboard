@@ -9,20 +9,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
-import { X, CarFront, Soup } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { X, CarFront } from "lucide-react";
 import NoData from "@/components/Common/NoData";
-import { FaStar } from "react-icons/fa";
 import Pagination from "@/components/Common/Pagination";
-import { IoCheckmarkOutline } from "react-icons/io5";
-
+import { IoCheckmarkOutline, IoRestaurant } from "react-icons/io5";
 import { RiHomeLine } from "react-icons/ri";
-import { FaRegFileAlt } from "react-icons/fa";
 import { GiCruiser } from "react-icons/gi";
 import {
   useBookingStatsQuery,
   useAllBookingQuery,
 } from "@/redux/api/booking.api";
+import { FaHotel } from "react-icons/fa6";
 
 const AllBookings = () => {
   const [page, setPage] = useState(1);
@@ -46,7 +43,7 @@ const AllBookings = () => {
 
   const totalPage = users?.result?.meta?.totalPages;
 
-  console.log(users?.result);
+  console.log(stats?.result);
 
   return (
     <div>
@@ -55,19 +52,34 @@ const AllBookings = () => {
         <p className="text-[#555555] text-xs pb-4">
           View and manage all property bookings
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div
             className={`flex justify-between items-center p-4 ${active === "" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
             onClick={() => setActive("")}
           >
             <div>
-              <h4>Properties</h4>
+              <h4>Total Property Bookings</h4>
               <h1 className="text-3xl pt-2 font-bold">
-                {stats?.result?.totalPropertyBookings}
+                {stats?.result?.totalBookings}
               </h1>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
               <RiHomeLine></RiHomeLine>
+            </div>
+          </div>
+          <div
+            className={`flex justify-between items-center p-4 ${active === "HOUSE_RENTAL" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
+            onClick={() => setActive("HOUSE_RENTAL")}
+          >
+            <div>
+              <h4>House Rentals</h4>
+              <h1 className="text-3xl pt-2 font-bold">
+                {stats?.result?.totalPropertyBookings}
+               
+              </h1>
+            </div>
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
+              <FaHotel></FaHotel>
             </div>
           </div>
           <div
@@ -99,18 +111,17 @@ const AllBookings = () => {
             </div>
           </div>
           <div
-            className={`flex justify-between items-center p-4 ${active === "HOUSE_RENTAL" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
-            onClick={() => setActive("HOUSE_RENTAL")}
+            className={`flex justify-between items-center p-4 ${active === "RESTAURANT" ? "bg-bprimary/10 border border-bprimary" : "bg-white"} rounded-lg shadow-xl cursor-pointer`}
+            onClick={() => setActive("RESTAURANT")}
           >
             <div>
-              <h4>House Rentals</h4>
+              <h4>Restaurants</h4>
               <h1 className="text-3xl pt-2 font-bold">
-                {stats?.result?.totalPropertyBookings}
-                "data lagbe"
+                {stats?.result?.totalRestaurantBookings}
               </h1>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
-              <Soup size={25}></Soup>
+              <IoRestaurant />
             </div>
           </div>
         </div>
@@ -171,12 +182,14 @@ const AllBookings = () => {
                     <TableCell>{user?.guest?.fullName}</TableCell>
                     <TableCell>{user?.property?.title}</TableCell>
                     <TableCell>
-                     {user?.checkInDate
+                      {user?.checkInDate
                         ? new Date(user.checkInDate).toLocaleDateString()
                         : "N/A"}
                     </TableCell>
                     <TableCell>
-                      {user?.checkOutDate ? new Date(user.checkOutDate).toLocaleDateString() : "N/A"}
+                      {user?.checkOutDate
+                        ? new Date(user.checkOutDate).toLocaleDateString()
+                        : "N/A"}
                     </TableCell>
                     <TableCell>${user?.totalPrice}</TableCell>
                     <TableCell>

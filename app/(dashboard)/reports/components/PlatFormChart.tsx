@@ -24,7 +24,7 @@ export default function PlatformChart() {
     // Guard clause for empty or missing data
     if (!apiData || apiData.length === 0) {
         return (
-            <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm flex items-center justify-center h-[279px] text-slate-400">
+            <div className="w-full max-w-6xl p-6 bg-white rounded-xl shadow-sm flex items-center justify-center h-[279px] text-slate-400">
                 No revenue data available.
             </div>
         );

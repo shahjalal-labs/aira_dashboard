@@ -72,15 +72,15 @@ const BookingPieChart = () => {
             </div>
             <div className="flex gap-5 justify-center">
                 <div className="flex gap-2 items-center">
-                    <h1 className="bg-black h-[10px] w-[10px] rounded-full"></h1>
+                    <h1 className="bg-black h-2.5 w-2.5 rounded-full"></h1>
                     <p className="text-gray-500">House Rental</p>
                 </div>
                 <div className="flex gap-2 items-center">
-                    <h1 className="bg-blue-600 h-[10px] w-[10px] rounded-full"></h1>
+                    <h1 className="bg-blue-600 h-2.5 w-2.5 rounded-full"></h1>
                     <p className="text-gray-500">Car Rental</p>
                 </div>
                 <div className="flex gap-2 items-center">
-                    <h1 className="bg-purple-600 h-[10px] w-[10px] rounded-full"></h1>
+                    <h1 className="bg-purple-600 h-2.5 w-2.5 rounded-full"></h1>
                     <p className="text-gray-500">Experiences</p>
                 </div>
             </div>

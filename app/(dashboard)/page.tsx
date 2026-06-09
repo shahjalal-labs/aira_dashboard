@@ -1,18 +1,13 @@
 "use client";
 
-import { MonthlyEarnings } from "@/components/overview/MonthlyEarnings";
 import { JWTDecodeToken } from "@/lib/jwtDecode";
-
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import HomeUser from "./user-management/components/HomeUser";
+import { useEffect } from "react";
 import Overview from "@/components/overview/Overview";
 import { BookingOverview } from "@/components/overview/BookingPieChart";
 import PlatformChart from "./reports/components/PlatFormChart";
 
 export default function Home() {
-  const [type, setType] = useState("monthly");
-
   const { decoded }: any = JWTDecodeToken();
   const router = useRouter();
   useEffect(() => {
@@ -31,7 +26,6 @@ export default function Home() {
           <BookingOverview></BookingOverview>
         </div>
       </div>
-      <HomeUser></HomeUser>
     </div>
   );
 }
