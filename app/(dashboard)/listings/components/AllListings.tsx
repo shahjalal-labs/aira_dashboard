@@ -207,7 +207,7 @@ const AllListings = () => {
                         )}
                         {user?.type === "HOUSE_RENTAL" && (
                           <span className="bg-gray-50 text-gray-700 px-2 py-1 rounded-full text-xs">
-                            Properties
+                            House Rentals
                           </span>
                         )}
                         {user?.type === "CAR_RENTAL" && (
