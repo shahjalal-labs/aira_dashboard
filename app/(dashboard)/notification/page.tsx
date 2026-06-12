@@ -1,9 +1,10 @@
-import React from 'react';
+
+import Summary from './components/Summary';
 
 const NotificationPage = () => {
     return (
         <div>
-            sdfsdfsf
+           <Summary></Summary>
         </div>
     );
 };
