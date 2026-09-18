@@ -34,14 +34,14 @@ export const authApi = baseApi.injectEndpoints({
     }),
     changePassword: builder.mutation({
       query: (body) => ({
-        url: `/auth/change-password`,
+        url: `/auth/change-pass`,
         method: `PATCH`,
         body: body,
       }),
     }),
     getMyProfile: builder.query({
       query: () => ({
-        url: `/users/profile`,
+        url: `/auth/me`,
         method: "GET",
       }),
       providesTags: ["profile"],
@@ -87,8 +87,16 @@ export const authApi = baseApi.injectEndpoints({
 
     updateMyProfile: builder.mutation({
       query: (body) => ({
-        url: `/admin/update-profile`,
-        method: `PUT`,
+        url: `/auth/me/update`,
+        method: `PATCH`,
+        body: body,
+      }),
+      invalidatesTags: ["profile"],
+    }),
+    updateProfilePhoto: builder.mutation({
+      query: (body: FormData) => ({
+        url: `/auth/update-profile-photo`,
+        method: `PATCH`,
         body: body,
       }),
       invalidatesTags: ["profile"],
@@ -119,6 +127,7 @@ export const {
   useChangePasswordMutation,
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
+  useUpdateProfilePhotoMutation,
   useUserDetailsQuery,
   useBlockUnblockMutation,
   useUserStatsQuery,
