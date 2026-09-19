@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import Overview from "@/components/overview/Overview";
 import { BookingOverview } from "@/components/overview/BookingPieChart";
 import PlatformChart from "./reports/components/PlatFormChart";
+import UserGrowthChart from "./reports/components/UserGrowth";
+import TopListing from "./reports/components/TopListing";
 
 export default function Home() {
   const { decoded }: any = JWTDecodeToken();
@@ -16,14 +18,22 @@ export default function Home() {
     }
   }, [decoded, router]);
   return (
-    <div>
-      <Overview></Overview>
-      <div className="grid grid-cols-3 mt-8 gap-8">
-        <div className="col-span-3 lg:col-span-2">
-          <PlatformChart></PlatformChart>
+    <div className="space-y-6 pb-6">
+      <Overview />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <PlatformChart />
         </div>
-        <div className="col-span-3 lg:col-span-1">
-          <BookingOverview></BookingOverview>
+        <div className="lg:col-span-1">
+          <BookingOverview />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <UserGrowthChart />
+        </div>
+        <div className="lg:col-span-1">
+          <TopListing />
         </div>
       </div>
     </div>

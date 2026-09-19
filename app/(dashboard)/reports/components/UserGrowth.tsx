@@ -25,7 +25,7 @@ export default function UserGrowthChart() {
   // Guard clause for empty or missing data
 if (!apiData || apiData.length === 0) {
   return (
-    <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm font-sans">
+    <div className="w-full max-w-6xl p-6 bg-white rounded-xl shadow-sm font-sans border border-gray-100">
       <h2 className="text-xl font-bold text-[#1e293b] mb-6">
         User Growth
       </h2>
@@ -66,7 +66,7 @@ if (!apiData || apiData.length === 0) {
   });
 
   return (
-    <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-sm font-sans">
+    <div className="w-full max-w-6xl p-6 bg-white rounded-xl shadow-sm font-sans border border-gray-100">
       <h2 className="text-xl font-bold text-[#1e293b] mb-6">User Growth</h2>
 
       <div className="w-full h-[279px]">

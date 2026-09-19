@@ -9,26 +9,31 @@ import { FaArrowRightLong } from "react-icons/fa6";
 
 const AllReviews = () => {
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const { data, isLoading } = useAllReviewsQuery({ page, searchTerm });
+  const { data, isLoading } = useAllReviewsQuery({ page, limit, searchTerm });
 
   console.log(data?.result);
 
   const totalPage = data?.result?.meta?.totalPages;
+  const total = data?.result?.meta?.total;
   return (
     <div>
       <div>
         <input
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1);
+          }}
           type="text"
-          placeholder="Search reviews and feedback"
-          className="border bg-white w-1/4 p-2 mt-12 rounded-[7px] py-1"
+          placeholder="Search reviews and feedback..."
+          className="border bg-white px-3 py-1.5 sm:py-2 rounded-[9px] text-xs sm:text-sm focus:outline-none focus:border-bprimary w-full sm:w-72 mt-2 sm:mt-4 mb-4"
         />
         <div>
           {data?.result?.data?.length > 0 ? (
-            <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mt-2">
               {data?.result?.data?.map((review: any) => (
-                <div key={review.id} className="p-4 bg-white rounded-lg shadow">
+                <div key={review.id} className="p-4 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md transition-all">
                   <div className="flex items-center gap-2">
                     <Rating style={{ maxWidth: 80 }} value={review.rating} />
                     <h1 className="bg-green-50 px-4 py-1 rounded-md text-green-500 text-xs">
@@ -52,7 +57,7 @@ const AllReviews = () => {
           ) : (
             <div>
               {isLoading ? (
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mt-2">
                   {[1, 2, 3].map((index) => (
                     <div
                       key={index}
@@ -69,9 +74,16 @@ const AllReviews = () => {
           )}
         </div>
       </div>
-      <div className="flex justify-center mt-12">
+      <div className="mt-12 w-full">
         {data?.result?.data?.length > 0 && (
-          <Pagination totalPage={totalPage} page={page} setPage={setPage} />
+          <Pagination
+            totalPage={totalPage}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+            total={total}
+          />
         )}
       </div>
     </div>

@@ -13,60 +13,77 @@ const Stats = () => {
 
   return (
     <div>
-      <h1 className="text-xl font-medium">Reports & Analytics</h1>
-      <p className="text-[#555555] text-xs pb-4">
-        Financial and operational insights
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div className="shadow-xl rounded-lg p-6 bg-white">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555]">GROSS REVENUE</h3>
-              <h3 className="text-3xl font-medium pt-2">
-                Kz {data?.result?.grossRevenue?.toLocaleString() ?? 0}
-              </h3>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl font-medium">Reports & Analytics</h1>
+        <p className="text-[#555555] text-xs pb-3 sm:pb-4">
+          Financial and operational insights
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+          {/* 1. Gross Revenue */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Gross Revenue
+              </h4>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none truncate">
+                  Kz {data?.result?.grossRevenue?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
-              <Wallet></Wallet>
-            </div>
-          </div>
-        </div>
-        <div className="shadow-xl rounded-lg p-6 bg-white">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555]">PLATFORM FEES</h3>
-              <h3 className="text-3xl font-medium pt-2">
-                Kz {data?.result?.totalPlatformFee?.toLocaleString() ?? 0}
-              </h3>
-            </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
-              <GrMoney />
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <Wallet size={18} />
             </div>
           </div>
-        </div>
-        <div className="shadow-xl rounded-lg p-6 bg-white">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555]">TOTAL USERS</h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.totalUsers?.toLocaleString()}
-              </h3>
+
+          {/* 2. Platform Fees */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Platform Fees
+              </h4>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none truncate">
+                  Kz {data?.result?.totalPlatformFee?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
-              <Users></Users>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <GrMoney size={18} />
             </div>
           </div>
-        </div>
-        <div className="shadow-xl rounded-lg p-6 bg-white">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555]">BOOKINGS</h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.totalBookings}
-              </h3>
+
+          {/* 3. Total Users */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Total Users
+              </h4>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+                  {data?.result?.totalUsers?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
-              <FaRegFileAlt />
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <Users size={18} />
+            </div>
+          </div>
+
+          {/* 4. Bookings */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Total Bookings
+              </h4>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+                  {data?.result?.totalBookings ?? 0}
+                </span>
+              </div>
+            </div>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <FaRegFileAlt size={18} />
             </div>
           </div>
         </div>

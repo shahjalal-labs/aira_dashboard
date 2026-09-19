@@ -16,125 +16,129 @@ const Overview = () => {
 
   return (
     <div>
-      <h1 className="text-xl font-medium">Dashboard</h1>
-      <p className="text-[#555555] text-xs pb-4">
-        Platform revenue tracking metrics
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Total Revenue */}
-        <div className="shadow-xl rounded-lg p-6 bg-white border border-transparent">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555]">Total Revenue</h3>
-              <h3 className="text-3xl font-medium pt-2">
-                Kz {data?.result?.totalPlatformRevenue?.toLocaleString() ?? 0}
-              </h3>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl font-medium">Dashboard</h1>
+        <p className="text-[#555555] text-xs pb-3 sm:pb-4">
+          Platform revenue tracking metrics
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {/* 1. Total Revenue */}
+          <div className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                Total Revenue
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight truncate">
+                  Kz {data?.result?.totalPlatformRevenue?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
-              <Banknote className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3">
+              <Banknote className="w-6 h-6" />
             </div>
           </div>
-        </div>
 
-        {/* Active Users -> /user-management?status=ACTIVE */}
-        <Link
-          href="/user-management?status=ACTIVE"
-          className="block shadow-xl rounded-lg p-6 bg-white border border-transparent hover:shadow-2xl hover:border-bprimary/30 transition-all cursor-pointer group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555] group-hover:text-bprimary transition-colors">
+          {/* 2. Active Users -> /user-management?status=ACTIVE */}
+          <Link
+            href="/user-management?status=ACTIVE"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md hover:border-bprimary/30 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-bprimary transition-colors truncate">
                 Active Users
-              </h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.activeUsers?.toLocaleString() ?? 0}
-              </h3>
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight truncate">
+                  {data?.result?.activeUsers?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary group-hover:bg-bprimary group-hover:text-white transition-colors">
-              <Users className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3 group-hover:bg-bprimary group-hover:text-white transition-colors">
+              <Users className="w-6 h-6" />
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Active Listings -> /listings?status=active */}
-        <Link
-          href="/listings?status=active"
-          className="block shadow-xl rounded-lg p-6 bg-white border border-transparent hover:shadow-2xl hover:border-bprimary/30 transition-all cursor-pointer group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555] group-hover:text-bprimary transition-colors">
+          {/* 3. Active Listings -> /listings?status=active */}
+          <Link
+            href="/listings?status=active"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md hover:border-bprimary/30 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-bprimary transition-colors truncate">
                 Active Listings
-              </h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.activeListings?.toLocaleString() ?? 0}
-              </h3>
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight truncate">
+                  {data?.result?.activeListings?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary group-hover:bg-bprimary group-hover:text-white transition-colors">
-              <FileChartColumnIncreasing className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3 group-hover:bg-bprimary group-hover:text-white transition-colors">
+              <FileChartColumnIncreasing className="w-6 h-6" />
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Total Bookings -> /bookings */}
-        <Link
-          href="/bookings"
-          className="block shadow-xl rounded-lg p-6 bg-white border border-transparent hover:shadow-2xl hover:border-bprimary/30 transition-all cursor-pointer group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555] group-hover:text-bprimary transition-colors">
+          {/* 4. Total Bookings -> /bookings */}
+          <Link
+            href="/bookings"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md hover:border-bprimary/30 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-bprimary transition-colors truncate">
                 Total Bookings
-              </h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.totalBookings?.toLocaleString() ?? 0}
-              </h3>
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight truncate">
+                  {data?.result?.totalBookings?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary group-hover:bg-bprimary group-hover:text-white transition-colors">
-              <Book className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3 group-hover:bg-bprimary group-hover:text-white transition-colors">
+              <Book className="w-6 h-6" />
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Pending Payouts -> /payouts?status=PENDING */}
-        <Link
-          href="/payouts?status=PENDING"
-          className="block shadow-xl rounded-lg p-6 bg-white border border-transparent hover:shadow-2xl hover:border-bprimary/30 transition-all cursor-pointer group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555] group-hover:text-bprimary transition-colors">
+          {/* 5. Pending Payouts -> /payouts?status=PENDING */}
+          <Link
+            href="/payouts?status=PENDING"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md hover:border-bprimary/30 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-bprimary transition-colors truncate">
                 Pending Payouts
-              </h3>
-              <h3 className="text-3xl font-medium pt-2">
-                Kz {data?.result?.totalHostPayouts?.toLocaleString() ?? 0}
-              </h3>
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight truncate">
+                  Kz {data?.result?.totalHostPayouts?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary group-hover:bg-bprimary group-hover:text-white transition-colors">
-              <Wallet className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3 group-hover:bg-bprimary group-hover:text-white transition-colors">
+              <Wallet className="w-6 h-6" />
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Pending Approvals -> /listings?status=pending */}
-        <Link
-          href="/listings?status=pending"
-          className="block shadow-xl rounded-lg p-6 bg-white border border-transparent hover:shadow-2xl hover:border-bprimary/30 transition-all cursor-pointer group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[#555555] group-hover:text-bprimary transition-colors">
+          {/* 6. Pending Approvals -> /listings?status=pending */}
+          <Link
+            href="/listings?status=pending"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white rounded-xl shadow-xs border border-gray-100 hover:shadow-md hover:border-bprimary/30 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 group-hover:text-bprimary transition-colors truncate">
                 Pending Approvals
-              </h3>
-              <h3 className="text-3xl font-medium pt-2">
-                {data?.result?.payoutEventsCount?.toLocaleString() ?? 0}
-              </h3>
+              </h4>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight truncate">
+                  {data?.result?.payoutEventsCount?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary group-hover:bg-bprimary group-hover:text-white transition-colors">
-              <CiWarning className="w-7 h-7" />
+            <div className="bg-bprimary/10 text-bprimary p-3 rounded-xl shrink-0 ml-3 group-hover:bg-bprimary group-hover:text-white transition-colors">
+              <CiWarning className="w-6 h-6" />
             </div>
-          </div>
-        </Link>
+          </Link>
+        </div>
       </div>
     </div>
   );

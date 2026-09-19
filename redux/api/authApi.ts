@@ -47,11 +47,23 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["profile"],
     }),
     userDetails: builder.query({
-      query: (id) => ({
-        url: `/admin/users/${id}`,
-        method: "GET",
-      }),
+      query: (arg: string | { id: string; role?: string }) => {
+        const id = typeof arg === "string" ? arg : arg.id;
+        const role = typeof arg === "object" ? arg.role : undefined;
+        return {
+          url: `/user/${id}${role ? `?role=${role}` : ""}`,
+          method: "GET",
+        };
+      },
       providesTags: ["profile"],
+    }),
+    verifyUserAccount: builder.mutation({
+      query: ({ id, verified }: { id: string; verified: boolean }) => ({
+        url: `/admin/users/verify/${id}`,
+        method: "PATCH",
+        body: { verified },
+      }),
+      invalidatesTags: ["profile"],
     }),
 
     allUsers: builder.query({
@@ -108,11 +120,33 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["profile"],
     }),
-    blockUnblock: builder.mutation({
-      query: (id) => ({
+    changeUserStatus: builder.mutation({
+      query: ({
+        id,
+        status,
+      }: {
+        id: string;
+        status: "ACTIVE" | "SUSPENDED";
+      }) => ({
         url: `/admin/users/status/${id}`,
         method: `PATCH`,
+        body: { status },
       }),
+      invalidatesTags: ["profile"],
+    }),
+    blockUnblock: builder.mutation({
+      query: (arg: any) => {
+        const id = typeof arg === "object" ? arg.id : arg;
+        const body =
+          typeof arg === "object" && arg.status
+            ? { status: arg.status }
+            : undefined;
+        return {
+          url: `/admin/users/status/${id}`,
+          method: `PATCH`,
+          body,
+        };
+      },
       invalidatesTags: ["profile"],
     }),
   }),
@@ -130,6 +164,8 @@ export const {
   useUpdateProfilePhotoMutation,
   useUserDetailsQuery,
   useBlockUnblockMutation,
+  useChangeUserStatusMutation,
   useUserStatsQuery,
   useDeleteUserMutation,
+  useVerifyUserAccountMutation,
 } = authApi;

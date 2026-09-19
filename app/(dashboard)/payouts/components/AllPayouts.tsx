@@ -25,6 +25,7 @@ const AllPayouts = () => {
   const queryStatus = searchParams.get("status") || "";
 
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [status, setStatus] = useState(queryStatus);
@@ -41,6 +42,7 @@ const AllPayouts = () => {
     isFetching,
   } = useAllPayoutsQuery({
     page,
+    limit,
     searchTerm: searchTerm || "",
     status,
   });
@@ -48,101 +50,168 @@ const AllPayouts = () => {
   const { data: stats } = usePayoutStatsQuery("");
 
   const totalPage = users?.result?.meta?.totalPages;
+  const total = users?.result?.meta?.total;
 
   return (
     <div>
-      <div className="mb-12">
+      <div className="mb-4 sm:mb-6">
         <h1 className="text-xl font-medium">Properties Payments & Payouts</h1>
-        <p className="text-[#555555] text-xs pb-4">
-          Track transactions, payouts, and refundes
+        <p className="text-[#555555] text-xs pb-3 sm:pb-4">
+          Track transactions, payouts, and refunds
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div
-            className={`flex justify-between items-center p-4 bg-white rounded-lg shadow-xl`}
-          >
-            <div>
-              <h4>Total Platform Balance</h4>
-              <h1 className="text-3xl pt-2 font-bold">
-                Kz {stats?.result?.totalPlatformBalance?.toLocaleString() ?? 0}
-              </h1>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+          {/* 1. Total Platform Balance */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Total Platform Balance
+              </h4>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none truncate">
+                  Kz {stats?.result?.totalPlatformBalance?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
-              <Wallet></Wallet>
-            </div>
-          </div>
-          <div
-            className={`flex justify-between items-center p-4 bg-white rounded-lg shadow-xl`}
-          >
-            <div>
-              <h4>Total Host Balance</h4>
-              <h1 className="text-3xl pt-2 font-bold">
-                Kz {stats?.result?.totalHostPayoutsBalance?.toLocaleString() ?? 0}
-              </h1>
-            </div>
-            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
-              <Wallet></Wallet>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <Wallet size={18} />
             </div>
           </div>
-          <div
-            className={`flex justify-between items-center p-4 bg-white rounded-lg shadow-xl`}
-          >
-            <div>
-              <h4>Payout Succeed</h4>
-              <h1 className="text-3xl pt-2 font-bold">
-                {stats?.result?.payoutSucceededCount}
-              </h1>
+
+          {/* 2. Total Host Balance */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Total Host Balance
+              </h4>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none truncate">
+                  Kz {stats?.result?.totalHostPayoutsBalance?.toLocaleString() ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
-              <GiWallet></GiWallet>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <Wallet size={18} />
             </div>
           </div>
-          <div
-            className={`flex justify-between items-center p-4 bg-white rounded-lg shadow-xl`}
-          >
-            <div>
-              <h4>Payout Failed</h4>
-              <h1 className="text-3xl pt-2 font-bold">
-                {stats?.result?.payoutFailedCount}
-              </h1>
+
+          {/* 3. Payout Succeed */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Payout Succeed
+              </h4>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+                  {stats?.result?.payoutSucceededCount ?? 0}
+                </span>
+              </div>
             </div>
-            <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
-              <CircleOff size={25}></CircleOff>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <GiWallet size={18} />
+            </div>
+          </div>
+
+          {/* 4. Payout Failed */}
+          <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white hover:shadow-md border border-gray-100 rounded-xl shadow-xs transition-all duration-200">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                Payout Failed
+              </h4>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+                  {stats?.result?.payoutFailedCount ?? 0}
+                </span>
+              </div>
+            </div>
+            <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
+              <CircleOff size={18} />
             </div>
           </div>
         </div>
       </div>
       <div>
-        <div className="lg:flex gap-5 mb-16">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 mb-5 sm:mb-6">
           <input
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
             type="text"
             placeholder="Search payouts..."
-            className="border bg-white px-2 rounded-[7px] py-1"
+            className="border bg-white px-3 py-1.5 sm:py-2 rounded-[9px] text-xs sm:text-sm focus:outline-none focus:border-bprimary w-full sm:w-64"
           />
-          <h1
-            onClick={() => setStatus(status === "SUCCEEDED" ? "" : "SUCCEEDED")}
-            className={`px-8 py-2 border rounded-[9px] cursor-pointer border-green-500 ${status === "SUCCEEDED" ? "bg-green-500 text-white" : "bg-green-50 text-green-500"}`}
-          >
-            Succeeded ({users?.result?.meta?.succeededCount})
-          </h1>
-          <h1
-            onClick={() => setStatus(status === "PROCESSING" ? "" : "PROCESSING")}
-            className={`px-8 py-2 border rounded-[9px] cursor-pointer border-bprimary ${status === "PROCESSING" ? "bg-bprimary text-white" : "bg-bprimary/10 text-bprimary"}`}
-          >
-            Processing ({users?.result?.meta?.processingCount})
-          </h1>
-          <h1
-            onClick={() => setStatus(status === "PENDING" ? "" : "PENDING")}
-            className={`px-8 py-2 border rounded-[9px] cursor-pointer border-yellow-500 ${status === "PENDING" ? "bg-yellow-500 text-white" : "bg-yellow-50 text-yellow-500"}`}
-          >
-            Pending ({users?.result?.meta?.pendingCount})
-          </h1>
-          <h1
-            onClick={() => setStatus(status === "FAILED" ? "" : "FAILED")}
-            className={`px-8 py-2 border rounded-[9px] cursor-pointer border-red-500 ${status === "FAILED" ? "bg-red-500 text-white" : "bg-red-50 text-red-500"}`}
-          >
-            Failed ({users?.result?.meta?.failedCount})
-          </h1>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setStatus("");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-bprimary shrink-0 ${
+                status === ""
+                  ? "bg-bprimary text-white"
+                  : "bg-bprimary/10 text-bprimary hover:bg-bprimary/20"
+              }`}
+            >
+              All Status
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus(status === "SUCCEEDED" ? "" : "SUCCEEDED");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-green-500 shrink-0 ${
+                status === "SUCCEEDED"
+                  ? "bg-green-500 text-white"
+                  : "bg-green-50 text-green-500 hover:bg-green-100"
+              }`}
+            >
+              Succeeded ({users?.result?.meta?.succeededCount ?? 0})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus(status === "PROCESSING" ? "" : "PROCESSING");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-bprimary shrink-0 ${
+                status === "PROCESSING"
+                  ? "bg-bprimary text-white"
+                  : "bg-bprimary/10 text-bprimary hover:bg-bprimary/20"
+              }`}
+            >
+              Processing ({users?.result?.meta?.processingCount ?? 0})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus(status === "PENDING" ? "" : "PENDING");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-yellow-500 shrink-0 ${
+                status === "PENDING"
+                  ? "bg-yellow-500 text-white"
+                  : "bg-yellow-50 text-yellow-500 hover:bg-yellow-100"
+              }`}
+            >
+              Pending ({users?.result?.meta?.pendingCount ?? 0})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus(status === "FAILED" ? "" : "FAILED");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-red-500 shrink-0 ${
+                status === "FAILED"
+                  ? "bg-red-500 text-white"
+                  : "bg-red-50 text-red-500 hover:bg-red-100"
+              }`}
+            >
+              Failed ({users?.result?.meta?.failedCount ?? 0})
+            </button>
+          </div>
         </div>
       </div>
       <div className="border border-gray-300 p-2  mb-6 bg-white rounded-xl">
@@ -227,7 +296,14 @@ const AllPayouts = () => {
         </Table>
 
         {users?.result?.data?.length > 0 && (
-          <Pagination totalPage={totalPage} page={page} setPage={setPage} />
+          <Pagination
+            totalPage={totalPage}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+            total={total}
+          />
         )}
       </div>
     </div>

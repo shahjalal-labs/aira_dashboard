@@ -48,8 +48,8 @@ const TopListing = () => {
   }
 
   return (
-    <div className="rounded-lg p-6 bg-white">
-      <h1 className="text-xl font-medium">Top Performing Listings</h1>
+    <div className="w-full rounded-xl p-6 bg-white shadow-sm border border-gray-100">
+      <h1 className="text-xl font-bold text-[#1e293b]">Top Performing Listings</h1>
 
       <div className="mt-4">
         {data.result.map((listing: any, index: number) => (
