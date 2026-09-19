@@ -8,7 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { X, Wallet, CircleOff } from "lucide-react";
 import NoData from "@/components/Common/NoData";
 import Pagination from "@/components/Common/Pagination";
@@ -20,10 +21,19 @@ import {
 import { GiWallet } from "react-icons/gi";
 
 const AllPayouts = () => {
+  const searchParams = useSearchParams();
+  const queryStatus = searchParams.get("status") || "";
+
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(queryStatus);
+
+  useEffect(() => {
+    if (queryStatus) {
+      setStatus(queryStatus);
+    }
+  }, [queryStatus]);
 
   const {
     data: users,
@@ -53,7 +63,7 @@ const AllPayouts = () => {
             <div>
               <h4>Total Platform Balance</h4>
               <h1 className="text-3xl pt-2 font-bold">
-                ${stats?.result?.totalPlatformBalance}
+                Kz {stats?.result?.totalPlatformBalance?.toLocaleString() ?? 0}
               </h1>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
@@ -66,7 +76,7 @@ const AllPayouts = () => {
             <div>
               <h4>Total Host Balance</h4>
               <h1 className="text-3xl pt-2 font-bold">
-                ${stats?.result?.totalHostPayoutsBalance}
+                Kz {stats?.result?.totalHostPayoutsBalance?.toLocaleString() ?? 0}
               </h1>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-3 rounded-lg">
@@ -110,25 +120,25 @@ const AllPayouts = () => {
             className="border bg-white px-2 rounded-[7px] py-1"
           />
           <h1
-            onClick={() => setStatus("SUCCEEDED")}
+            onClick={() => setStatus(status === "SUCCEEDED" ? "" : "SUCCEEDED")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-green-500 ${status === "SUCCEEDED" ? "bg-green-500 text-white" : "bg-green-50 text-green-500"}`}
           >
             Succeeded ({users?.result?.meta?.succeededCount})
           </h1>
           <h1
-            onClick={() => setStatus("PROCESSING")}
+            onClick={() => setStatus(status === "PROCESSING" ? "" : "PROCESSING")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-bprimary ${status === "PROCESSING" ? "bg-bprimary text-white" : "bg-bprimary/10 text-bprimary"}`}
           >
             Processing ({users?.result?.meta?.processingCount})
           </h1>
           <h1
-            onClick={() => setStatus("PENDING")}
+            onClick={() => setStatus(status === "PENDING" ? "" : "PENDING")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-yellow-500 ${status === "PENDING" ? "bg-yellow-500 text-white" : "bg-yellow-50 text-yellow-500"}`}
           >
             Pending ({users?.result?.meta?.pendingCount})
           </h1>
           <h1
-            onClick={() => setStatus("FAILED")}
+            onClick={() => setStatus(status === "FAILED" ? "" : "FAILED")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-red-500 ${status === "FAILED" ? "bg-red-500 text-white" : "bg-red-50 text-red-500"}`}
           >
             Failed ({users?.result?.meta?.failedCount})
@@ -159,7 +169,7 @@ const AllPayouts = () => {
                   <TableRow key={user.id}>
                     <TableCell>{user.stripeTransferId || "----"}</TableCell>
                     <TableCell>{user?.host?.fullName}</TableCell>
-                    <TableCell>${user?.amount}</TableCell>
+                    <TableCell>Kz {user?.amount?.toLocaleString() ?? user?.amount}</TableCell>
                     <TableCell>
                       {user?.requestedAt
                         ? new Date(user.requestedAt).toLocaleDateString()

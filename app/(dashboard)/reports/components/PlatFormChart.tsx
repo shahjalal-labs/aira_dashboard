@@ -83,12 +83,12 @@ export default function PlatformChart() {
               dy={10}
             />
 
-            {/* Y-Axis: Formatted to show $ and k */}
+            {/* Y-Axis: Formatted to show Kz */}
             <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fill: "#94a3b8", fontSize: 14 }}
-              tickFormatter={(val) => `$${val}`}
+              tickFormatter={(val) => `Kz ${val}`}
             />
 
             <Tooltip
@@ -104,7 +104,7 @@ export default function PlatformChart() {
                 border: "none",
               }}
               itemStyle={{ color: "#fff" }}
-              formatter={(value: number) => [`$${value}`, "Revenue"]}
+              formatter={(value: number) => [`Kz ${value?.toLocaleString() ?? value}`, "Revenue"]}
             />
 
             {/* Area Line and Fill */}

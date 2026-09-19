@@ -8,7 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { X, CarFront } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoData from "@/components/Common/NoData";
@@ -24,11 +25,20 @@ import { GiCruiser } from "react-icons/gi";
 import { FaRegFileAlt } from "react-icons/fa";
 
 const AllListings = () => {
+  const searchParams = useSearchParams();
+  const queryStatus = searchParams.get("status") || "";
+
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(""); 
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [active, setActive] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(queryStatus);
+
+  useEffect(() => {
+    if (queryStatus) {
+      setStatus(queryStatus);
+    }
+  }, [queryStatus]);
 
   const {
     data: users,
@@ -134,19 +144,19 @@ const AllListings = () => {
             className="border bg-white px-2 rounded-[7px] py-1"
           />
           <h1
-            onClick={() => setStatus("active")}
+            onClick={() => setStatus(status === "active" ? "" : "active")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-green-500 ${status === "active" ? "bg-green-500 text-white" : "bg-green-50 text-green-500"}`}
           >
             Published ({stats?.result?.activeCount})
           </h1>
           <h1
-            onClick={() => setStatus("pending")}
+            onClick={() => setStatus(status === "pending" ? "" : "pending")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-yellow-500 ${status === "pending" ? "bg-yellow-500 text-white" : "bg-yellow-50 text-yellow-500"}`}
           >
             Draft ({stats?.result?.pendingCount})
           </h1>
           <h1
-            onClick={() => setStatus("rejected")}
+            onClick={() => setStatus(status === "rejected" ? "" : "rejected")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-red-500 ${status === "rejected" ? "bg-red-500 text-white" : "bg-red-50 text-red-500"}`}
           >
             Rejected ({stats?.result?.rejectedCount})
@@ -224,7 +234,7 @@ const AllListings = () => {
                     </TableCell>
 
                     <TableCell>{user?.host?.fullName}</TableCell>
-                    <TableCell>${user?.basePrice}/night</TableCell>
+                    <TableCell>Kz {user?.basePrice}/night</TableCell>
                     <TableCell>
                       <div>
                         {user?.status === "DRAFT" && (

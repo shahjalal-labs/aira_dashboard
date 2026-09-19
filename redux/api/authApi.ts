@@ -55,10 +55,10 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     allUsers: builder.query({
-      query: ({ page, searchTerm, status, role }) => {
+      query: ({ page, limit = 10, searchTerm, status, role }) => {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "15",
+          limit: String(limit),
           searchTerm: searchTerm || "",
         });
 

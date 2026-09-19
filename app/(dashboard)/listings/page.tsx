@@ -1,11 +1,11 @@
-import React from "react";
+import React, { Suspense } from "react";
 import AllListings from "./components/AllListings";
 
 const ListingPage = () => {
   return (
-    <div>
-      <AllListings></AllListings>
-    </div>
+    <Suspense fallback={<div className="p-6">Loading listings...</div>}>
+      <AllListings />
+    </Suspense>
   );
 };
 

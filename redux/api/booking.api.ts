@@ -3,10 +3,10 @@ import { baseApi } from "./baseApi";
 export const bookingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     allBooking: builder.query({
-      query: ({ page, searchTerm, status, propertyType }) => {
+      query: ({ page, limit = 10, searchTerm, status, propertyType }) => {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "15",
+          limit: String(limit),
           searchTerm: searchTerm || "",
         });
 
@@ -26,10 +26,10 @@ export const bookingApi = baseApi.injectEndpoints({
       providesTags: ["bookings"],
     }),
     allReviews: builder.query({
-      query: ({ page, searchTerm }) => {
+      query: ({ page, limit = 10, searchTerm }) => {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "12",
+          limit: String(limit),
           searchTerm: searchTerm || "",
         });
 

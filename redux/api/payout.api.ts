@@ -3,10 +3,10 @@ import { baseApi } from "./baseApi";
 export const payoutApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     allPayouts: builder.query({
-      query: ({ page, searchTerm, status }) => {
+      query: ({ page, limit = 10, searchTerm, status }) => {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "15",
+          limit: String(limit),
           searchTerm: searchTerm || "",
         });
 

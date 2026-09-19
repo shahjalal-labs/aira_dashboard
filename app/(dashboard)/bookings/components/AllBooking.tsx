@@ -191,7 +191,7 @@ const AllBookings = () => {
                         ? new Date(user.checkOutDate).toLocaleDateString()
                         : "N/A"}
                     </TableCell>
-                    <TableCell>${user?.totalPrice}</TableCell>
+                    <TableCell>Kz {user?.totalPrice?.toLocaleString() ?? user?.totalPrice}</TableCell>
                     <TableCell>
                       <div>
                         {user?.status === "PENDING" && (

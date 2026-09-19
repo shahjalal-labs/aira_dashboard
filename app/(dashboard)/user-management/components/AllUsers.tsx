@@ -8,7 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { X, User, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoData from "@/components/Common/NoData";
@@ -18,11 +19,20 @@ import { toast } from "sonner";
 import { IoCheckmarkOutline } from "react-icons/io5";
 
 const AllUsers = () => {
+  const searchParams = useSearchParams();
+  const queryStatus = searchParams.get("status") || "";
+
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState(""); // 🔑 Track which row is being acted on
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [active, setActive] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(queryStatus);
+
+  useEffect(() => {
+    if (queryStatus) {
+      setStatus(queryStatus);
+    }
+  }, [queryStatus]);
 
   const {
     data: users,
@@ -102,19 +112,19 @@ const AllUsers = () => {
             className="border bg-white px-2 rounded-[7px] py-1"
           />
           <h1
-            onClick={() => setStatus("ACTIVE")}
+            onClick={() => setStatus(status === "ACTIVE" ? "" : "ACTIVE")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-green-500 ${status === "ACTIVE" ? "bg-green-500 text-white" : "bg-green-50 text-green-500"}`}
           >
             Active ({stats?.result?.totalActive})
           </h1>
           <h1
-            onClick={() => setStatus("SUSPENDED")}
+            onClick={() => setStatus(status === "SUSPENDED" ? "" : "SUSPENDED")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-red-500 ${status === "SUSPENDED" ? "bg-red-500 text-white" : "bg-red-50 text-red-500"}`}
           >
             Suspended ({stats?.result?.totalSuspended})
           </h1>
           <h1
-            onClick={() => setStatus("PENDING")}
+            onClick={() => setStatus(status === "PENDING" ? "" : "PENDING")}
             className={`px-8 py-2 border rounded-[9px] cursor-pointer border-yellow-500 ${status === "PENDING" ? "bg-yellow-500 text-white" : "bg-yellow-50 text-yellow-500"}`}
           >
             Pending ({stats?.result?.totalPending})

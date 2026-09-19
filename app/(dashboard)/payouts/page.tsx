@@ -1,12 +1,12 @@
-import React from 'react';
-import AllPayouts from './components/AllPayouts';
+import React, { Suspense } from "react";
+import AllPayouts from "./components/AllPayouts";
 
 const PayoutPage = () => {
-    return (
-        <div>
-            <AllPayouts></AllPayouts>
-        </div>
-    );
+  return (
+    <Suspense fallback={<div className="p-6">Loading payouts...</div>}>
+      <AllPayouts />
+    </Suspense>
+  );
 };
 
 export default PayoutPage;

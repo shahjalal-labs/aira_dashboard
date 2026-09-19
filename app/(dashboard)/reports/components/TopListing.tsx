@@ -70,7 +70,7 @@ const TopListing = () => {
 
             <div>
               <h1 className="font-medium text-xl">
-                ${listing.basePrice}
+                Kz {listing.basePrice}
               </h1>
               <h1 className="text-sm text-gray-500">
                 {listing.bookingCount} bookings

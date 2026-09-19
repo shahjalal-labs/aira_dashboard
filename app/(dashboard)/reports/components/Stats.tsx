@@ -23,7 +23,7 @@ const Stats = () => {
             <div>
               <h3 className="text-[#555555]">GROSS REVENUE</h3>
               <h3 className="text-3xl font-medium pt-2">
-                ${data?.result?.grossRevenue?.toLocaleString()}
+                Kz {data?.result?.grossRevenue?.toLocaleString() ?? 0}
               </h3>
             </div>
             <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">
@@ -36,7 +36,7 @@ const Stats = () => {
             <div>
               <h3 className="text-[#555555]">PLATFORM FEES</h3>
               <h3 className="text-3xl font-medium pt-2">
-                ${data?.result?.totalPlatformFee?.toLocaleString()}
+                Kz {data?.result?.totalPlatformFee?.toLocaleString() ?? 0}
               </h3>
             </div>
             <div className="bg-bprimary/10 p-3 text-2xl rounded-lg text-bprimary">

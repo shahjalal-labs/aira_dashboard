@@ -3,10 +3,10 @@ import { baseApi } from "./baseApi";
 export const listingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     allListings: builder.query({
-      query: ({ page, searchTerm, status, type }) => {
+      query: ({ page, limit = 10, searchTerm, status, type }) => {
         const params = new URLSearchParams({
           page: String(page),
-          limit: "15",
+          limit: String(limit),
           searchTerm: searchTerm || "",
         });
 
