@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { X, CarFront } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoData from "@/components/Common/NoData";
@@ -19,12 +19,15 @@ import { IoCheckmarkOutline, IoRestaurant } from "react-icons/io5";
 import {
   useAllListingsQuery,
   useListingStatsQuery,
+  useUpdatePropertyStatusMutation,
 } from "@/redux/api/listing.api";
+import { toast } from "sonner";
 import { RiHomeLine } from "react-icons/ri";
 import { GiCruiser } from "react-icons/gi";
 import { FaRegFileAlt } from "react-icons/fa";
 
 const AllListings = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryStatus = searchParams.get("status") || "";
 
@@ -34,6 +37,27 @@ const AllListings = () => {
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [active, setActive] = useState("");
   const [status, setStatus] = useState(queryStatus);
+
+  const [updatePropertyStatus] = useUpdatePropertyStatusMutation();
+
+  const handleStatusUpdate = async (
+    propertyId: string,
+    newStatus: "DRAFT" | "PUBLISHED" | "REJECTED"
+  ) => {
+    try {
+      const res = await updatePropertyStatus({
+        id: propertyId,
+        status: newStatus,
+      }).unwrap();
+      if (res?.success) {
+        toast.success(`Property status updated to ${newStatus}`);
+      } else {
+        toast.error(res?.message || "Failed to update property status");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Error updating property status");
+    }
+  };
 
   useEffect(() => {
     if (queryStatus) {
@@ -296,7 +320,11 @@ const AllListings = () => {
                 const isCurrent = activeUserId === user.id;
 
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow
+                    key={user.id}
+                    onClick={() => router.push(`/listings/${user.id}`)}
+                    className="cursor-pointer hover:bg-gray-50/80 transition"
+                  >
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
@@ -310,10 +338,13 @@ const AllListings = () => {
                           <AvatarFallback>{user?.title}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className=" text-gray-800">{user?.title}</span>
-                          <span className="text-xs  text-gray-500">
-                            {user?.location.city}, {user?.location.state},{" "}
-                            {user?.location.country}
+                          <span className="text-gray-800 font-medium hover:text-bprimary transition">
+                            {user?.title}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {[user?.location?.city, user?.location?.state, user?.location?.country]
+                              .filter(Boolean)
+                              .join(", ")}
                           </span>
                         </div>
                       </div>
@@ -321,44 +352,44 @@ const AllListings = () => {
                     <TableCell>
                       <div>
                         {user?.type === "EXPERIENCE" && (
-                          <span className="bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full text-xs font-medium">
                             Experiences
                           </span>
                         )}
                         {user?.type === "HOUSE_RENTAL" && (
-                          <span className="bg-gray-50 text-gray-700 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
                             House Rentals
                           </span>
                         )}
                         {user?.type === "CAR_RENTAL" && (
-                          <span className="bg-bprimary/10 text-bprimary px-2 py-1 rounded-full text-xs">
+                          <span className="bg-bprimary/10 text-bprimary px-2 py-1 rounded-full text-xs font-medium">
                             Car Rentals
                           </span>
                         )}
                         {user?.type === "RESTAURANT" && (
-                          <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-purple-50 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
                             Restaurants
                           </span>
                         )}
                       </div>
                     </TableCell>
 
-                    <TableCell>{user?.host?.fullName}</TableCell>
+                    <TableCell>{user?.host?.fullName || "—"}</TableCell>
                     <TableCell>Kz {user?.basePrice}/night</TableCell>
                     <TableCell>
                       <div>
                         {user?.status === "DRAFT" && (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
                             Draft
                           </span>
                         )}
                         {user?.status === "PUBLISHED" && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                             Published
                           </span>
                         )}
                         {user?.status === "REJECTED" && (
-                          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
                             Rejected
                           </span>
                         )}
@@ -366,24 +397,48 @@ const AllListings = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex text-black gap-1 items-center">
-                        <FaStar></FaStar> {user?.averageRating}
+                        <FaStar className="text-amber-500" /> {user?.averageRating ?? 0}
                       </div>
                     </TableCell>
-                    <TableCell>{user?.bookingCount}</TableCell>
+                    <TableCell>{user?.bookingCount ?? 0}</TableCell>
 
                     <TableCell>
-                      {user?.status === "DRAFT" ? (
-                        <div className="flex gap-2">
-                          <button className="text-white bg-red-500 p-1 rounded-[9px]">
-                            <X size={20} />
-                          </button>
-                          <button className="text-white bg-green-500 p-1 rounded-[9px]">
-                            <IoCheckmarkOutline size={20} />
-                          </button>
-                        </div>
-                      ) : (
-                        "---"
-                      )}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/listings/${user.id}`);
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium text-bprimary bg-bprimary/10 hover:bg-bprimary hover:text-white rounded-md transition cursor-pointer"
+                        >
+                          View
+                        </button>
+
+                        {user?.status === "DRAFT" && (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(user.id, "REJECTED");
+                              }}
+                              title="Reject"
+                              className="text-white bg-red-500 hover:bg-red-600 p-1 rounded-[7px] cursor-pointer transition"
+                            >
+                              <X size={15} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(user.id, "PUBLISHED");
+                              }}
+                              title="Approve & Publish"
+                              className="text-white bg-green-500 hover:bg-green-600 p-1 rounded-[7px] cursor-pointer transition"
+                            >
+                              <IoCheckmarkOutline size={15} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
