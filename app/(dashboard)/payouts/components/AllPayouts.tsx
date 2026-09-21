@@ -9,26 +9,82 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { X, Wallet, CircleOff } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { X, Wallet, Clock, CheckCircle2, XCircle } from "lucide-react";
 import NoData from "@/components/Common/NoData";
 import Pagination from "@/components/Common/Pagination";
 import { IoCheckmarkOutline } from "react-icons/io5";
 import {
   useAllPayoutsQuery,
   usePayoutStatsQuery,
+  useUpdatePayoutStatusMutation,
 } from "@/redux/api/payout.api";
-import { GiWallet } from "react-icons/gi";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+const getPayoutStatusBadge = (status?: string) => {
+  const normalized = (status || "").toUpperCase();
+  switch (normalized) {
+    case "SUCCEEDED":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <CheckCircle2 size={12} className="text-emerald-600" />
+          Succeeded
+        </span>
+      );
+    case "PROCESSING":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+          <Clock size={12} className="text-blue-600" />
+          Processing
+        </span>
+      );
+    case "FAILED":
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
+          <XCircle size={12} className="text-red-600" />
+          Failed
+        </span>
+      );
+    case "PENDING":
+    default:
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+          <Clock size={12} className="text-amber-600" />
+          Pending
+        </span>
+      );
+  }
+};
 
 const AllPayouts = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryStatus = searchParams.get("status") || "";
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [status, setStatus] = useState(queryStatus);
+
+  // Modals state
+  const [selectedPayout, setSelectedPayout] = useState<any | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isFailedModalOpen, setIsFailedModalOpen] = useState(false);
+  const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
+
+  const [transactionIdInput, setTransactionIdInput] = useState("");
+  const [failureReasonInput, setFailureReasonInput] = useState("");
+
+  const [updatePayoutStatus, { isLoading: isUpdating }] =
+    useUpdatePayoutStatusMutation();
 
   useEffect(() => {
     if (queryStatus) {
@@ -40,6 +96,7 @@ const AllPayouts = () => {
     data: users,
     isLoading,
     isFetching,
+    refetch,
   } = useAllPayoutsQuery({
     page,
     limit,
@@ -51,6 +108,68 @@ const AllPayouts = () => {
 
   const totalPage = users?.result?.meta?.totalPages;
   const total = users?.result?.meta?.total;
+
+  const handleMarkAsProcessing = async () => {
+    if (!selectedPayout) return;
+    try {
+      await updatePayoutStatus({
+        id: selectedPayout.id,
+        status: "PROCESSING",
+      }).unwrap();
+      toast.success("Payout marked as Processing");
+      setIsProcessingModalOpen(false);
+      setSelectedPayout(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message || err?.message || "Failed to update payout status"
+      );
+    }
+  };
+
+  const handleMarkAsSucceeded = async () => {
+    if (!selectedPayout) return;
+    try {
+      await updatePayoutStatus({
+        id: selectedPayout.id,
+        status: "SUCCEEDED",
+        transactionId: transactionIdInput.trim() || undefined,
+      }).unwrap();
+      toast.success("Payout marked as Succeeded and balance deducted!");
+      setIsSuccessModalOpen(false);
+      setSelectedPayout(null);
+      setTransactionIdInput("");
+      refetch();
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message || err?.message || "Failed to complete payout"
+      );
+    }
+  };
+
+  const handleMarkAsFailed = async () => {
+    if (!selectedPayout) return;
+    if (!failureReasonInput.trim()) {
+      toast.error("Please provide a reason for the failure");
+      return;
+    }
+    try {
+      await updatePayoutStatus({
+        id: selectedPayout.id,
+        status: "FAILED",
+        errorMessage: failureReasonInput.trim(),
+      }).unwrap();
+      toast.success("Payout marked as Failed");
+      setIsFailedModalOpen(false);
+      setSelectedPayout(null);
+      setFailureReasonInput("");
+      refetch();
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message || err?.message || "Failed to mark payout as failed"
+      );
+    }
+  };
 
   return (
     <div>
@@ -100,14 +219,14 @@ const AllPayouts = () => {
               <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
                 Payout Succeed
               </h4>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none">
                   {stats?.result?.payoutSucceededCount ?? 0}
                 </span>
               </div>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
-              <GiWallet size={18} />
+              <CheckCircle2 size={18} />
             </div>
           </div>
 
@@ -117,18 +236,19 @@ const AllPayouts = () => {
               <h4 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
                 Payout Failed
               </h4>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-lg sm:text-2xl font-bold text-gray-900 leading-none">
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base sm:text-xl font-bold text-gray-900 leading-none">
                   {stats?.result?.payoutFailedCount ?? 0}
                 </span>
               </div>
             </div>
             <div className="bg-bprimary/10 text-bprimary p-2 rounded-lg shrink-0 ml-2">
-              <CircleOff size={18} />
+              <XCircle size={18} />
             </div>
           </div>
         </div>
       </div>
+
       <div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 mb-5 sm:mb-6">
           <input
@@ -175,10 +295,10 @@ const AllPayouts = () => {
                 setStatus(status === "PROCESSING" ? "" : "PROCESSING");
                 setPage(1);
               }}
-              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-bprimary shrink-0 ${
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-blue-500 shrink-0 ${
                 status === "PROCESSING"
-                  ? "bg-bprimary text-white"
-                  : "bg-bprimary/10 text-bprimary hover:bg-bprimary/20"
+                  ? "bg-blue-500 text-white"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100"
               }`}
             >
               Processing ({users?.result?.meta?.processingCount ?? 0})
@@ -214,11 +334,12 @@ const AllPayouts = () => {
           </div>
         </div>
       </div>
-      <div className="border border-gray-300 p-2  mb-6 bg-white rounded-xl">
+
+      <div className="border border-gray-300 p-2 mb-6 bg-white rounded-xl">
         <Table className="rounded-lg min-w-[900px]">
           <TableHeader className="bg-gray-50 text-gray-400">
             <TableRow>
-              <TableHead className="w-[250px] whitespace-nowrap">
+              <TableHead className="w-[200px] whitespace-nowrap">
                 TRANSACTION ID
               </TableHead>
               <TableHead>HOST</TableHead>
@@ -232,54 +353,89 @@ const AllPayouts = () => {
           <TableBody>
             {users?.result?.data?.length > 0 ? (
               users.result.data.map((user: any) => {
-                const isCurrent = activeUserId === user.id;
-
                 return (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.stripeTransferId || "----"}</TableCell>
-                    <TableCell>{user?.host?.fullName}</TableCell>
-                    <TableCell>Kz {user?.amount?.toLocaleString() ?? user?.amount}</TableCell>
-                    <TableCell>
+                  <TableRow
+                    key={user.id}
+                    onClick={() => router.push(`/payouts/${user.id}`)}
+                    className="cursor-pointer hover:bg-gray-50/80 transition"
+                  >
+                    <TableCell className="font-mono text-xs text-gray-700">
+                      {user.transactionId || user.stripeTransferId || "----"}
+                    </TableCell>
+                    <TableCell className="font-medium text-gray-900">
+                      {user?.host?.fullName || "Unknown Host"}
+                    </TableCell>
+                    <TableCell className="font-semibold text-gray-900">
+                      Kz {user?.amount?.toLocaleString() ?? user?.amount}
+                    </TableCell>
+                    <TableCell className="text-gray-500 text-xs">
                       {user?.requestedAt
                         ? new Date(user.requestedAt).toLocaleDateString()
                         : "N/A"}
                     </TableCell>
-                    <TableCell>
-                      <div>
-                        {user?.status === "SUCCEEDED" && (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                            Succeeded
-                          </span>
-                        )}
-                        {user?.status === "PROCESSING" && (
-                          <span className="bg-bprimary/10 text-bprimary px-2 py-1 rounded-full text-xs">
-                            Processing
-                          </span>
-                        )}
-                        {user?.status === "FAILED" && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
-                            Failed
-                          </span>
-                        )}
-                        {user?.status === "PENDING" && (
-                          <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                            Pending
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {user?.status === "PENDING" ? (
-                        <div className="flex gap-2">
-                          <button className="text-white bg-red-500 p-1 rounded-[9px]">
-                            <X size={20} />
+                    <TableCell>{getPayoutStatusBadge(user?.status)}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      {user?.status === "PENDING" && (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            title="Mark as Processing"
+                            onClick={() => {
+                              setSelectedPayout(user);
+                              setIsProcessingModalOpen(true);
+                            }}
+                            className="text-white bg-blue-500 hover:bg-blue-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+                          >
+                            <Clock size={16} />
                           </button>
-                          <button className="text-white bg-green-500 p-1 rounded-[9px]">
-                            <IoCheckmarkOutline size={20} />
+                          <button
+                            title="Mark as Succeeded"
+                            onClick={() => {
+                              setSelectedPayout(user);
+                              setIsSuccessModalOpen(true);
+                            }}
+                            className="text-white bg-emerald-500 hover:bg-emerald-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+                          >
+                            <IoCheckmarkOutline size={16} />
+                          </button>
+                          <button
+                            title="Mark as Failed"
+                            onClick={() => {
+                              setSelectedPayout(user);
+                              setIsFailedModalOpen(true);
+                            }}
+                            className="text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+                          >
+                            <X size={16} />
                           </button>
                         </div>
-                      ) : (
-                        "---"
+                      )}
+                      {user?.status === "PROCESSING" && (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            title="Mark as Succeeded"
+                            onClick={() => {
+                              setSelectedPayout(user);
+                              setIsSuccessModalOpen(true);
+                            }}
+                            className="text-white bg-emerald-500 hover:bg-emerald-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+                          >
+                            <IoCheckmarkOutline size={16} />
+                          </button>
+                          <button
+                            title="Mark as Failed"
+                            onClick={() => {
+                              setSelectedPayout(user);
+                              setIsFailedModalOpen(true);
+                            }}
+                            className="text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                      {(user?.status === "SUCCEEDED" ||
+                        user?.status === "FAILED") && (
+                        <span className="text-gray-400 text-xs pl-2">---</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -306,6 +462,169 @@ const AllPayouts = () => {
           />
         )}
       </div>
+
+      {/* ── Action Modals ── */}
+
+      {/* Modal 1: Mark as Processing */}
+      <Dialog
+        open={isProcessingModalOpen}
+        onOpenChange={setIsProcessingModalOpen}
+      >
+        <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" />
+              Mark Payout as Processing
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500 pt-1">
+              Are you sure you want to mark this payout of{" "}
+              <strong className="text-gray-900">
+                Kz {selectedPayout?.amount?.toLocaleString()}
+              </strong>{" "}
+              for host{" "}
+              <strong className="text-gray-900">
+                {selectedPayout?.host?.fullName}
+              </strong>{" "}
+              as Processing?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsProcessingModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleMarkAsProcessing}
+              disabled={isUpdating}
+              className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-xs disabled:opacity-50"
+            >
+              {isUpdating ? "Updating..." : "Confirm Processing"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 2: Mark as Succeeded */}
+      <Dialog open={isSuccessModalOpen} onOpenChange={setIsSuccessModalOpen}>
+        <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              Complete Payout & Deduct Balance
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500 pt-1">
+              Approving this payout will mark it as Succeeded and deduct{" "}
+              <strong className="text-gray-900">
+                Kz {selectedPayout?.amount?.toLocaleString()}
+              </strong>{" "}
+              from host{" "}
+              <strong className="text-gray-900">
+                {selectedPayout?.host?.fullName}
+              </strong>
+              &apos;s available balance.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-3">
+            <label
+              htmlFor="payoutTxId"
+              className="text-xs font-semibold text-gray-700 block"
+            >
+              Transaction Reference / ID{" "}
+              <span className="text-gray-400 font-normal">(Optional)</span>
+            </label>
+            <input
+              id="payoutTxId"
+              type="text"
+              placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
+              value={transactionIdInput}
+              onChange={(e) => setTransactionIdInput(e.target.value)}
+              className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+            />
+            <p className="text-[11px] text-gray-400">
+              Provide the bank transfer reference or transaction ID for audit
+              tracking.
+            </p>
+          </div>
+
+          <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsSuccessModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleMarkAsSucceeded}
+              disabled={isUpdating}
+              className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs disabled:opacity-50"
+            >
+              {isUpdating ? "Processing..." : "Confirm & Succeeded"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 3: Mark as Failed */}
+      <Dialog open={isFailedModalOpen} onOpenChange={setIsFailedModalOpen}>
+        <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-red-600" />
+              Mark Payout as Failed
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500 pt-1">
+              Marking this payout as failed will reject the request. The host&apos;s
+              balance will not be deducted.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-3">
+            <label
+              htmlFor="payoutFailureReason"
+              className="text-xs font-semibold text-gray-700 block"
+            >
+              Reason for Failure <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="payoutFailureReason"
+              rows={3}
+              placeholder="e.g. Invalid bank account details, IBAN mismatch, or requested by host..."
+              value={failureReasonInput}
+              onChange={(e) => setFailureReasonInput(e.target.value)}
+              className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+            />
+            <p className="text-[11px] text-gray-400">
+              This explanation will be recorded and shown in the audit details.
+            </p>
+          </div>
+
+          <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsFailedModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleMarkAsFailed}
+              disabled={isUpdating}
+              className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition shadow-xs disabled:opacity-50"
+            >
+              {isUpdating ? "Updating..." : "Confirm Failure"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

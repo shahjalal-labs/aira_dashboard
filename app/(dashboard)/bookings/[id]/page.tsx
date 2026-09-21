@@ -553,11 +553,11 @@ export default function BookingDetailsPage() {
             </div>
 
             {/* Payment Details / Gateway References */}
-            {(booking.emisReference || booking.stripePaymentIntentId) && (
+            {booking.emisReference && (
               <div className="flex items-center justify-between py-1.5 border-b border-gray-100 text-xs">
-                <span className="text-gray-400">Payment Reference</span>
+                <span className="text-gray-400">Payment Reference (EMIS)</span>
                 <span className="font-mono text-gray-700 break-all">
-                  {booking.emisReference || booking.stripePaymentIntentId}
+                  {booking.emisReference}
                 </span>
               </div>
             )}
