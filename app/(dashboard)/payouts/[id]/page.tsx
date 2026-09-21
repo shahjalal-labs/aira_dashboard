@@ -95,10 +95,29 @@ export default function PayoutDetailsPage() {
         if (transactionIdInput.trim()) {
           formData.append("transactionId", transactionIdInput.trim());
         }
+        formData.append(
+          "data",
+          JSON.stringify({
+            status: "PROCESSING",
+            transactionId: transactionIdInput.trim() || undefined,
+          }),
+        );
+        formData.append(
+          "bodyData",
+          JSON.stringify({
+            status: "PROCESSING",
+            transactionId: transactionIdInput.trim() || undefined,
+          }),
+        );
         selectedImages.forEach((img) => {
           formData.append("referenceImages", img);
         });
-        await updatePayoutStatus({ id: payoutId, data: formData }).unwrap();
+        await updatePayoutStatus({
+          id: payoutId,
+          status: "PROCESSING",
+          transactionId: transactionIdInput.trim() || undefined,
+          data: formData,
+        }).unwrap();
       } else {
         await updatePayoutStatus({
           id: payoutId,
@@ -126,10 +145,29 @@ export default function PayoutDetailsPage() {
         if (transactionIdInput.trim()) {
           formData.append("transactionId", transactionIdInput.trim());
         }
+        formData.append(
+          "data",
+          JSON.stringify({
+            status: "SUCCEEDED",
+            transactionId: transactionIdInput.trim() || undefined,
+          }),
+        );
+        formData.append(
+          "bodyData",
+          JSON.stringify({
+            status: "SUCCEEDED",
+            transactionId: transactionIdInput.trim() || undefined,
+          }),
+        );
         selectedImages.forEach((img) => {
           formData.append("referenceImages", img);
         });
-        await updatePayoutStatus({ id: payoutId, data: formData }).unwrap();
+        await updatePayoutStatus({
+          id: payoutId,
+          status: "SUCCEEDED",
+          transactionId: transactionIdInput.trim() || undefined,
+          data: formData,
+        }).unwrap();
       } else {
         await updatePayoutStatus({
           id: payoutId,

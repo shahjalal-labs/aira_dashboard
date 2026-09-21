@@ -44,8 +44,30 @@ export const payoutApi = baseApi.injectEndpoints({
         data?: FormData;
       }) => {
         const { id, data, ...rest } = arg;
+        const statusVal =
+          rest.status ||
+          (data instanceof FormData ? (data.get("status") as string) : undefined);
+        const txIdVal =
+          rest.transactionId ||
+          (data instanceof FormData
+            ? (data.get("transactionId") as string)
+            : undefined);
+        const errorMsgVal =
+          rest.errorMessage ||
+          (data instanceof FormData
+            ? (data.get("errorMessage") as string)
+            : undefined);
+
+        const queryParams = new URLSearchParams();
+        if (statusVal) queryParams.set("status", statusVal);
+        if (txIdVal) queryParams.set("transactionId", txIdVal);
+        if (errorMsgVal) queryParams.set("errorMessage", errorMsgVal);
+        const queryString = queryParams.toString()
+          ? `?${queryParams.toString()}`
+          : "";
+
         return {
-          url: `/admin/payouts/status/${id}`,
+          url: `/admin/payouts/status/${id}${queryString}`,
           method: "PATCH",
           body: data || rest,
         };
