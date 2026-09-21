@@ -19,16 +19,19 @@ import { Badge } from "@/components/ui/badge";
 import {
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
+  useUpdateIdentityMutation,
   useUpdateProfilePhotoMutation,
 } from "@/redux/api/authApi";
 
 interface ProfileFormValues {
   fullName: string;
+  phoneNumber: string;
 }
 
 export default function ProfileSettings() {
   const { data: profileData, isLoading: isFetchingProfile } = useGetMyProfileQuery("");
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateMyProfileMutation();
+  const [updateIdentity, { isLoading: isUpdatingIdentity }] = useUpdateIdentityMutation();
   const [updateProfilePhoto, { isLoading: isUploadingPhoto }] = useUpdateProfilePhotoMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +47,7 @@ export default function ProfileSettings() {
   } = useForm<ProfileFormValues>({
     defaultValues: {
       fullName: "",
+      phoneNumber: "",
     },
   });
 
@@ -51,6 +55,7 @@ export default function ProfileSettings() {
     if (profile) {
       reset({
         fullName: profile.fullName || "",
+        phoneNumber: profile.phoneNumber || "",
       });
     }
   }, [profile, reset]);
@@ -85,14 +90,40 @@ export default function ProfileSettings() {
     }
   };
 
+  const isSaving = isUpdatingProfile || isUpdatingIdentity;
+
   const onSubmit = async (values: ProfileFormValues) => {
+    const trimmedFullName = values.fullName.trim();
+    const trimmedPhone = values.phoneNumber?.trim() || "";
+
+    const isNameChanged = trimmedFullName !== (profile?.fullName || "");
+    const isPhoneChanged = trimmedPhone !== (profile?.phoneNumber || "");
+
+    if (!isNameChanged && !isPhoneChanged) {
+      toast.info("No changes to save");
+      return;
+    }
+
     try {
-      const res = await updateProfile({
-        fullName: values.fullName.trim(),
-      }).unwrap();
-      toast.success(res?.message || "Profile updated successfully!");
+      if (isNameChanged) {
+        await updateProfile({
+          fullName: trimmedFullName,
+        }).unwrap();
+      }
+
+      if (isPhoneChanged && trimmedPhone) {
+        await updateIdentity({
+          phoneNumber: trimmedPhone,
+        }).unwrap();
+      }
+
+      toast.success("Profile updated successfully!");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update profile");
+      const msg =
+        error?.data?.message ||
+        error?.data?.errors?.[0]?.message ||
+        "Failed to update profile";
+      toast.error(msg);
     }
   };
 
@@ -270,10 +301,25 @@ export default function ProfileSettings() {
                 </label>
                 <Input
                   id="phoneNumber"
-                  value={profile?.phoneNumber || "Not configured"}
-                  disabled
-                  className="h-11 rounded-lg bg-gray-50/80 border-gray-200 text-gray-500 cursor-not-allowed text-sm"
+                  placeholder="+244 923 456 789"
+                  {...register("phoneNumber", {
+                    pattern: {
+                      value: /^\+?[0-9\s\-()]{7,20}$/,
+                      message:
+                        "Please enter a valid phone number with country code (e.g. +244 923 456 789)",
+                    },
+                  })}
+                  className="h-11 rounded-lg border-gray-300 focus:border-bprimary focus:ring-bprimary text-sm"
                 />
+                {errors.phoneNumber ? (
+                  <p className="text-xs text-red-500 font-medium">
+                    {errors.phoneNumber.message}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-gray-400">
+                    Include country code (e.g. +244 923 456 789).
+                  </p>
+                )}
               </div>
 
               {/* Role */}
@@ -298,10 +344,10 @@ export default function ProfileSettings() {
           <CardFooter className="border-t border-gray-100 px-6 py-4 flex justify-end">
             <Button
               type="submit"
-              disabled={isUpdatingProfile || !isDirty}
+              disabled={isSaving || !isDirty}
               className="bg-bprimary hover:bg-bprimary/90 text-white font-medium px-6 py-2.5 rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
-              {isUpdatingProfile ? (
+              {isSaving ? (
                 <>
                   <Loader className="w-4 h-4 mr-2 animate-spin" />
                   Saving Changes...

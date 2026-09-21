@@ -105,6 +105,14 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["profile"],
     }),
+    updateIdentity: builder.mutation({
+      query: (body) => ({
+        url: `/auth/me/identity`,
+        method: `PATCH`,
+        body: body,
+      }),
+      invalidatesTags: ["profile"],
+    }),
     updateProfilePhoto: builder.mutation({
       query: (body: FormData) => ({
         url: `/auth/update-profile-photo`,
@@ -161,6 +169,7 @@ export const {
   useChangePasswordMutation,
   useGetMyProfileQuery,
   useUpdateMyProfileMutation,
+  useUpdateIdentityMutation,
   useUpdateProfilePhotoMutation,
   useUserDetailsQuery,
   useBlockUnblockMutation,
