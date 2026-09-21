@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, CarFront } from "lucide-react";
 import NoData from "@/components/Common/NoData";
 import Pagination from "@/components/Common/Pagination";
@@ -21,7 +22,51 @@ import {
 } from "@/redux/api/booking.api";
 import { FaHotel } from "react-icons/fa6";
 
+const getBookingStatusBadge = (status?: string) => {
+  const normalized = (status || "").toUpperCase();
+
+  switch (normalized) {
+    case "CONFIRMED":
+      return {
+        label: "Confirmed",
+        badgeClass: "bg-green-50 text-green-700 border border-green-200",
+        dotClass: "bg-green-500",
+      };
+    case "APPROVED":
+      return {
+        label: "Approved",
+        badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+        dotClass: "bg-emerald-500",
+      };
+    case "PENDING":
+      return {
+        label: "Pending",
+        badgeClass: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+        dotClass: "bg-yellow-500",
+      };
+    case "COMPLETED":
+      return {
+        label: "Completed",
+        badgeClass: "bg-blue-50 text-blue-700 border border-blue-200",
+        dotClass: "bg-blue-500",
+      };
+    case "CANCELLED":
+      return {
+        label: "Cancelled",
+        badgeClass: "bg-red-50 text-red-700 border border-red-200",
+        dotClass: "bg-red-500",
+      };
+    default:
+      return {
+        label: status || "Unknown",
+        badgeClass: "bg-gray-100 text-gray-700 border border-gray-200",
+        dotClass: "bg-gray-400",
+      };
+  }
+};
+
 const AllBookings = () => {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -221,6 +266,34 @@ const AllBookings = () => {
             <button
               type="button"
               onClick={() => {
+                setStatus(status === "PENDING" ? "" : "PENDING");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-yellow-500 shrink-0 ${
+                status === "PENDING"
+                  ? "bg-yellow-500 text-white"
+                  : "bg-yellow-50 text-yellow-500 hover:bg-yellow-100"
+              }`}
+            >
+              Pending ({stats?.result?.pendingCount ?? 0})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatus(status === "APPROVED" ? "" : "APPROVED");
+                setPage(1);
+              }}
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-emerald-500 shrink-0 ${
+                status === "APPROVED"
+                  ? "bg-emerald-500 text-white"
+                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+              }`}
+            >
+              Approved {stats?.result?.approvedCount !== undefined ? `(${stats.result.approvedCount})` : ""}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
                 setStatus(status === "CONFIRMED" ? "" : "CONFIRMED");
                 setPage(1);
               }}
@@ -235,16 +308,16 @@ const AllBookings = () => {
             <button
               type="button"
               onClick={() => {
-                setStatus(status === "PENDING" ? "" : "PENDING");
+                setStatus(status === "COMPLETED" ? "" : "COMPLETED");
                 setPage(1);
               }}
-              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-yellow-500 shrink-0 ${
-                status === "PENDING"
-                  ? "bg-yellow-500 text-white"
-                  : "bg-yellow-50 text-yellow-500 hover:bg-yellow-100"
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 border rounded-[9px] cursor-pointer transition text-xs sm:text-sm font-medium border-blue-500 shrink-0 ${
+                status === "COMPLETED"
+                  ? "bg-blue-500 text-white"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100"
               }`}
             >
-              Pending ({stats?.result?.pendingCount ?? 0})
+              Completed ({stats?.result?.completedCount ?? 0})
             </button>
             <button
               type="button"
@@ -286,10 +359,26 @@ const AllBookings = () => {
                 const isCurrent = activeUserId === user.id;
 
                 return (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell>{user?.guest?.fullName}</TableCell>
-                    <TableCell>{user?.property?.title}</TableCell>
+                  <TableRow
+                    key={user.id}
+                    onClick={() => router.push(`/bookings/${user.id}`)}
+                    className="cursor-pointer hover:bg-gray-50/80 transition"
+                  >
+                    <TableCell>
+                      <span className="font-mono text-xs text-gray-700 hover:text-bprimary transition">
+                        {user.id}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium text-gray-900">
+                        {user?.guest?.fullName || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-gray-800 line-clamp-1 max-w-[200px]" title={user?.property?.title}>
+                        {user?.property?.title || "—"}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       {user?.checkInDate
                         ? new Date(user.checkInDate).toLocaleDateString()
@@ -300,39 +389,38 @@ const AllBookings = () => {
                         ? new Date(user.checkOutDate).toLocaleDateString()
                         : "N/A"}
                     </TableCell>
-                    <TableCell>Kz {user?.totalPrice?.toLocaleString() ?? user?.totalPrice}</TableCell>
                     <TableCell>
-                      <div>
-                        {user?.status === "PENDING" && (
-                          <span className="bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full text-xs">
-                            Pending
-                          </span>
-                        )}
-                        {user?.status === "CONFIRMED" && (
-                          <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs">
-                            Confirmed
-                          </span>
-                        )}
-                        {user?.status === "CANCELLED" && (
-                          <span className="bg-red-50 text-red-700 px-2 py-1 rounded-full text-xs">
-                            Cancelled
-                          </span>
-                        )}
-                      </div>
+                      <span className="font-semibold text-gray-900">
+                        Kz {user?.totalPrice?.toLocaleString() ?? user?.totalPrice}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      {user?.status === "PENDING" ? (
-                        <div className="flex gap-2">
-                          <button className="text-white bg-red-500 p-1 rounded-[9px]">
-                            <X size={20} />
-                          </button>
-                          <button className="text-white bg-green-500 p-1 rounded-[9px]">
-                            <IoCheckmarkOutline size={20} />
-                          </button>
-                        </div>
-                      ) : (
-                        "---"
-                      )}
+                      {(() => {
+                        const statusInfo = getBookingStatusBadge(user?.status);
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusInfo.badgeClass}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotClass}`}
+                            />
+                            {statusInfo.label}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/bookings/${user.id}`);
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium text-bprimary bg-bprimary/10 hover:bg-bprimary hover:text-white rounded-md transition cursor-pointer"
+                        >
+                          View
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
