@@ -9,6 +9,7 @@ import {
   useUpdatePayoutStatusMutation,
 } from "@/redux/api/payout.api";
 import { toast } from "sonner";
+import ReferenceImageUploader from "../components/ReferenceImageUploader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -76,6 +77,7 @@ export default function PayoutDetailsPage() {
 
   const [transactionIdInput, setTransactionIdInput] = useState("");
   const [failureReasonInput, setFailureReasonInput] = useState("");
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, key: string) => {
@@ -87,34 +89,62 @@ export default function PayoutDetailsPage() {
 
   const handleMarkAsProcessing = async () => {
     try {
-      await updatePayoutStatus({
-        id: payoutId,
-        status: "PROCESSING",
-      }).unwrap();
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        formData.append("status", "PROCESSING");
+        if (transactionIdInput.trim()) {
+          formData.append("transactionId", transactionIdInput.trim());
+        }
+        selectedImages.forEach((img) => {
+          formData.append("referenceImages", img);
+        });
+        await updatePayoutStatus({ id: payoutId, data: formData }).unwrap();
+      } else {
+        await updatePayoutStatus({
+          id: payoutId,
+          status: "PROCESSING",
+          transactionId: transactionIdInput.trim() || undefined,
+        }).unwrap();
+      }
       toast.success("Payout status marked as Processing");
       setIsProcessingModalOpen(false);
+      setTransactionIdInput("");
+      setSelectedImages([]);
       refetch();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to update payout status"
+        err?.data?.message || err?.message || "Failed to update payout status",
       );
     }
   };
 
   const handleMarkAsSucceeded = async () => {
     try {
-      await updatePayoutStatus({
-        id: payoutId,
-        status: "SUCCEEDED",
-        transactionId: transactionIdInput.trim() || undefined,
-      }).unwrap();
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        formData.append("status", "SUCCEEDED");
+        if (transactionIdInput.trim()) {
+          formData.append("transactionId", transactionIdInput.trim());
+        }
+        selectedImages.forEach((img) => {
+          formData.append("referenceImages", img);
+        });
+        await updatePayoutStatus({ id: payoutId, data: formData }).unwrap();
+      } else {
+        await updatePayoutStatus({
+          id: payoutId,
+          status: "SUCCEEDED",
+          transactionId: transactionIdInput.trim() || undefined,
+        }).unwrap();
+      }
       toast.success("Payout marked as Succeeded and completed!");
       setIsSuccessModalOpen(false);
       setTransactionIdInput("");
+      setSelectedImages([]);
       refetch();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to complete payout"
+        err?.data?.message || err?.message || "Failed to complete payout",
       );
     }
   };
@@ -457,6 +487,45 @@ export default function PayoutDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Transfer Proof & Reference Documents */}
+            {payout.referenceImages && payout.referenceImages.length > 0 && (
+              <div className="rounded-xl border border-gray-100 overflow-hidden">
+                <div className="bg-gray-50/70 px-4 py-2.5 border-b border-gray-100 text-xs font-semibold text-gray-700 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <FileText size={14} className="text-gray-500" />
+                    Transfer Proof & Reference Documents ({payout.referenceImages.length})
+                  </span>
+                  <span className="text-[11px] text-gray-400 font-normal">
+                    Attached to notification email
+                  </span>
+                </div>
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  {payout.referenceImages.map((imgUrl: string, idx: number) => (
+                    <a
+                      key={idx}
+                      href={imgUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative block aspect-square rounded-lg border border-gray-200 overflow-hidden hover:border-bprimary transition bg-gray-50 shadow-2xs"
+                    >
+                      <img
+                        src={imgUrl}
+                        alt={`Reference ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1 text-white text-[11px] font-medium">
+                        <ExternalLink size={14} />
+                        <span>View</span>
+                      </div>
+                      <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] px-1 py-0.5 text-center truncate">
+                        Doc {idx + 1}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Card 2: Bank & Withdrawal Method Details */}
@@ -602,20 +671,47 @@ export default function PayoutDetailsPage() {
         open={isProcessingModalOpen}
         onOpenChange={setIsProcessingModalOpen}
       >
-        <DialogContent className="max-w-md bg-white rounded-2xl">
+        <DialogContent className="max-w-md bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-600" />
               Mark Payout as Processing
             </DialogTitle>
             <DialogDescription className="text-xs text-gray-500 pt-1">
-              Are you sure you want to transition this payout request of{" "}
+              Mark this payout request of{" "}
               <strong className="text-gray-900">
                 Kz {payoutAmount.toLocaleString()}
               </strong>{" "}
-              to Processing status?
+              for host <strong className="text-gray-900">{host.fullName}</strong>{" "}
+              as Processing. The host will be notified that payment is being initiated.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="procTxId"
+                className="text-xs font-semibold text-gray-700 block"
+              >
+                Transaction Reference / ID{" "}
+                <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="procTxId"
+                type="text"
+                placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
+                value={transactionIdInput}
+                onChange={(e) => setTransactionIdInput(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+              />
+            </div>
+
+            <ReferenceImageUploader
+              images={selectedImages}
+              onChange={setSelectedImages}
+              maxImages={5}
+            />
+          </div>
 
           <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">
             <button
@@ -637,9 +733,9 @@ export default function PayoutDetailsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal 2: Mark as Succeeded (with Optional Transaction ID) */}
+      {/* Modal 2: Mark as Succeeded (with Optional Transaction ID & Images) */}
       <Dialog open={isSuccessModalOpen} onOpenChange={setIsSuccessModalOpen}>
-        <DialogContent className="max-w-md bg-white rounded-2xl">
+        <DialogContent className="max-w-md bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -655,26 +751,34 @@ export default function PayoutDetailsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-3">
-            <label
-              htmlFor="txId"
-              className="text-xs font-semibold text-gray-700 block"
-            >
-              Transaction Reference / ID{" "}
-              <span className="text-gray-400 font-normal">(Optional)</span>
-            </label>
-            <input
-              id="txId"
-              type="text"
-              placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
-              value={transactionIdInput}
-              onChange={(e) => setTransactionIdInput(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="txId"
+                className="text-xs font-semibold text-gray-700 block"
+              >
+                Transaction Reference / ID{" "}
+                <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="txId"
+                type="text"
+                placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
+                value={transactionIdInput}
+                onChange={(e) => setTransactionIdInput(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+              />
+              <p className="text-[11px] text-gray-400">
+                Provide the bank transaction ID or transfer reference for audit
+                tracking.
+              </p>
+            </div>
+
+            <ReferenceImageUploader
+              images={selectedImages}
+              onChange={setSelectedImages}
+              maxImages={5}
             />
-            <p className="text-[11px] text-gray-400">
-              Provide the bank transaction ID or transfer reference for audit
-              tracking.
-            </p>
           </div>
 
           <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">

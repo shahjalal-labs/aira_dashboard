@@ -20,6 +20,7 @@ import {
   useUpdatePayoutStatusMutation,
 } from "@/redux/api/payout.api";
 import { toast } from "sonner";
+import ReferenceImageUploader from "./ReferenceImageUploader";
 import {
   Dialog,
   DialogContent,
@@ -82,9 +83,30 @@ const AllPayouts = () => {
 
   const [transactionIdInput, setTransactionIdInput] = useState("");
   const [failureReasonInput, setFailureReasonInput] = useState("");
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   const [updatePayoutStatus, { isLoading: isUpdating }] =
     useUpdatePayoutStatusMutation();
+
+  const openProcessingModal = (payout: any) => {
+    setSelectedPayout(payout);
+    setTransactionIdInput(payout?.transactionId || "");
+    setSelectedImages([]);
+    setIsProcessingModalOpen(true);
+  };
+
+  const openSuccessModal = (payout: any) => {
+    setSelectedPayout(payout);
+    setTransactionIdInput(payout?.transactionId || "");
+    setSelectedImages([]);
+    setIsSuccessModalOpen(true);
+  };
+
+  const openFailedModal = (payout: any) => {
+    setSelectedPayout(payout);
+    setFailureReasonInput("");
+    setIsFailedModalOpen(true);
+  };
 
   useEffect(() => {
     if (queryStatus) {
@@ -112,17 +134,35 @@ const AllPayouts = () => {
   const handleMarkAsProcessing = async () => {
     if (!selectedPayout) return;
     try {
-      await updatePayoutStatus({
-        id: selectedPayout.id,
-        status: "PROCESSING",
-      }).unwrap();
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        formData.append("status", "PROCESSING");
+        if (transactionIdInput.trim()) {
+          formData.append("transactionId", transactionIdInput.trim());
+        }
+        selectedImages.forEach((img) => {
+          formData.append("referenceImages", img);
+        });
+        await updatePayoutStatus({
+          id: selectedPayout.id,
+          data: formData,
+        }).unwrap();
+      } else {
+        await updatePayoutStatus({
+          id: selectedPayout.id,
+          status: "PROCESSING",
+          transactionId: transactionIdInput.trim() || undefined,
+        }).unwrap();
+      }
       toast.success("Payout marked as Processing");
       setIsProcessingModalOpen(false);
       setSelectedPayout(null);
+      setTransactionIdInput("");
+      setSelectedImages([]);
       refetch();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to update payout status"
+        err?.data?.message || err?.message || "Failed to update payout status",
       );
     }
   };
@@ -130,19 +170,35 @@ const AllPayouts = () => {
   const handleMarkAsSucceeded = async () => {
     if (!selectedPayout) return;
     try {
-      await updatePayoutStatus({
-        id: selectedPayout.id,
-        status: "SUCCEEDED",
-        transactionId: transactionIdInput.trim() || undefined,
-      }).unwrap();
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        formData.append("status", "SUCCEEDED");
+        if (transactionIdInput.trim()) {
+          formData.append("transactionId", transactionIdInput.trim());
+        }
+        selectedImages.forEach((img) => {
+          formData.append("referenceImages", img);
+        });
+        await updatePayoutStatus({
+          id: selectedPayout.id,
+          data: formData,
+        }).unwrap();
+      } else {
+        await updatePayoutStatus({
+          id: selectedPayout.id,
+          status: "SUCCEEDED",
+          transactionId: transactionIdInput.trim() || undefined,
+        }).unwrap();
+      }
       toast.success("Payout marked as Succeeded and balance deducted!");
       setIsSuccessModalOpen(false);
       setSelectedPayout(null);
       setTransactionIdInput("");
+      setSelectedImages([]);
       refetch();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to complete payout"
+        err?.data?.message || err?.message || "Failed to complete payout",
       );
     }
   };
@@ -379,30 +435,21 @@ const AllPayouts = () => {
                         <div className="flex items-center gap-1.5">
                           <button
                             title="Mark as Processing"
-                            onClick={() => {
-                              setSelectedPayout(user);
-                              setIsProcessingModalOpen(true);
-                            }}
+                            onClick={() => openProcessingModal(user)}
                             className="text-white bg-blue-500 hover:bg-blue-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
                           >
                             <Clock size={16} />
                           </button>
                           <button
                             title="Mark as Succeeded"
-                            onClick={() => {
-                              setSelectedPayout(user);
-                              setIsSuccessModalOpen(true);
-                            }}
+                            onClick={() => openSuccessModal(user)}
                             className="text-white bg-emerald-500 hover:bg-emerald-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
                           >
                             <IoCheckmarkOutline size={16} />
                           </button>
                           <button
                             title="Mark as Failed"
-                            onClick={() => {
-                              setSelectedPayout(user);
-                              setIsFailedModalOpen(true);
-                            }}
+                            onClick={() => openFailedModal(user)}
                             className="text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
                           >
                             <X size={16} />
@@ -413,20 +460,14 @@ const AllPayouts = () => {
                         <div className="flex items-center gap-1.5">
                           <button
                             title="Mark as Succeeded"
-                            onClick={() => {
-                              setSelectedPayout(user);
-                              setIsSuccessModalOpen(true);
-                            }}
+                            onClick={() => openSuccessModal(user)}
                             className="text-white bg-emerald-500 hover:bg-emerald-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
                           >
                             <IoCheckmarkOutline size={16} />
                           </button>
                           <button
                             title="Mark as Failed"
-                            onClick={() => {
-                              setSelectedPayout(user);
-                              setIsFailedModalOpen(true);
-                            }}
+                            onClick={() => openFailedModal(user)}
                             className="text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition shadow-2xs cursor-pointer"
                           >
                             <X size={16} />
@@ -470,14 +511,14 @@ const AllPayouts = () => {
         open={isProcessingModalOpen}
         onOpenChange={setIsProcessingModalOpen}
       >
-        <DialogContent className="max-w-md bg-white rounded-2xl">
+        <DialogContent className="max-w-md bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-600" />
               Mark Payout as Processing
             </DialogTitle>
             <DialogDescription className="text-xs text-gray-500 pt-1">
-              Are you sure you want to mark this payout of{" "}
+              Mark this payout of{" "}
               <strong className="text-gray-900">
                 Kz {selectedPayout?.amount?.toLocaleString()}
               </strong>{" "}
@@ -485,9 +526,35 @@ const AllPayouts = () => {
               <strong className="text-gray-900">
                 {selectedPayout?.host?.fullName}
               </strong>{" "}
-              as Processing?
+              as Processing. The host will be notified that their transfer is underway.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="procTxId"
+                className="text-xs font-semibold text-gray-700 block"
+              >
+                Transaction Reference / ID{" "}
+                <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="procTxId"
+                type="text"
+                placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
+                value={transactionIdInput}
+                onChange={(e) => setTransactionIdInput(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+              />
+            </div>
+
+            <ReferenceImageUploader
+              images={selectedImages}
+              onChange={setSelectedImages}
+              maxImages={5}
+            />
+          </div>
 
           <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">
             <button
@@ -511,7 +578,7 @@ const AllPayouts = () => {
 
       {/* Modal 2: Mark as Succeeded */}
       <Dialog open={isSuccessModalOpen} onOpenChange={setIsSuccessModalOpen}>
-        <DialogContent className="max-w-md bg-white rounded-2xl">
+        <DialogContent className="max-w-md bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -530,26 +597,34 @@ const AllPayouts = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-3">
-            <label
-              htmlFor="payoutTxId"
-              className="text-xs font-semibold text-gray-700 block"
-            >
-              Transaction Reference / ID{" "}
-              <span className="text-gray-400 font-normal">(Optional)</span>
-            </label>
-            <input
-              id="payoutTxId"
-              type="text"
-              placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
-              value={transactionIdInput}
-              onChange={(e) => setTransactionIdInput(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="payoutTxId"
+                className="text-xs font-semibold text-gray-700 block"
+              >
+                Transaction Reference / ID{" "}
+                <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="payoutTxId"
+                type="text"
+                placeholder="e.g. EMIS-TX-987654 or Bank Ref #..."
+                value={transactionIdInput}
+                onChange={(e) => setTransactionIdInput(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-bprimary"
+              />
+              <p className="text-[11px] text-gray-400">
+                Provide the bank transfer reference or transaction ID for audit
+                tracking.
+              </p>
+            </div>
+
+            <ReferenceImageUploader
+              images={selectedImages}
+              onChange={setSelectedImages}
+              maxImages={5}
             />
-            <p className="text-[11px] text-gray-400">
-              Provide the bank transfer reference or transaction ID for audit
-              tracking.
-            </p>
           </div>
 
           <DialogFooter className="flex gap-2 sm:justify-end pt-4 border-t border-gray-100">

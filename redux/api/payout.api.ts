@@ -36,19 +36,20 @@ export const payoutApi = baseApi.injectEndpoints({
       providesTags: ["payouts"],
     }),
     updatePayoutStatus: builder.mutation({
-      query: ({
-        id,
-        ...body
-      }: {
+      query: (arg: {
         id: string;
-        status: "SUCCEEDED" | "FAILED" | "PROCESSING";
+        status?: "SUCCEEDED" | "FAILED" | "PROCESSING";
         transactionId?: string;
         errorMessage?: string;
-      }) => ({
-        url: `/admin/payouts/status/${id}`,
-        method: "PATCH",
-        body,
-      }),
+        data?: FormData;
+      }) => {
+        const { id, data, ...rest } = arg;
+        return {
+          url: `/admin/payouts/status/${id}`,
+          method: "PATCH",
+          body: data || rest,
+        };
+      },
       invalidatesTags: ["payouts", "stats"],
     }),
   }),
