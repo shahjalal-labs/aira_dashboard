@@ -10,6 +10,7 @@ import {
 } from "@/redux/api/payout.api";
 import { toast } from "sonner";
 import ReferenceImageUploader from "../components/ReferenceImageUploader";
+import CopyButton from "@/components/ui/copy-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -78,14 +79,6 @@ export default function PayoutDetailsPage() {
   const [transactionIdInput, setTransactionIdInput] = useState("");
   const [failureReasonInput, setFailureReasonInput] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
 
   const handleMarkAsProcessing = async () => {
     try {
@@ -451,23 +444,11 @@ export default function PayoutDetailsPage() {
                   <span className="font-mono font-semibold text-gray-900 flex items-center gap-1.5">
                     {payout.transactionId || payout.stripeTransferId ? (
                       <>
-                        {payout.transactionId || payout.stripeTransferId}
-                        <button
-                          onClick={() =>
-                            copyToClipboard(
-                              payout.transactionId || payout.stripeTransferId,
-                              "txId"
-                            )
-                          }
-                          className="text-gray-400 hover:text-gray-700 transition"
-                          title="Copy Transaction ID"
-                        >
-                          {copiedKey === "txId" ? (
-                            <Check size={13} className="text-emerald-600" />
-                          ) : (
-                            <Copy size={13} />
-                          )}
-                        </button>
+                        <span>{payout.transactionId || payout.stripeTransferId}</span>
+                        <CopyButton
+                          text={payout.transactionId || payout.stripeTransferId}
+                          label="Copy Transaction Reference"
+                        />
                       </>
                     ) : (
                       <span className="text-gray-400 font-normal italic">
@@ -480,18 +461,8 @@ export default function PayoutDetailsPage() {
                 <div className="flex items-center justify-between p-3.5">
                   <span className="text-gray-500">Payout Record ID</span>
                   <span className="font-mono font-semibold text-gray-900 flex items-center gap-1.5">
-                    {payout.id}
-                    <button
-                      onClick={() => copyToClipboard(payout.id, "payoutId")}
-                      className="text-gray-400 hover:text-gray-700 transition"
-                      title="Copy Payout ID"
-                    >
-                      {copiedKey === "payoutId" ? (
-                        <Check size={13} className="text-emerald-600" />
-                      ) : (
-                        <Copy size={13} />
-                      )}
-                    </button>
+                    <span>{payout.id}</span>
+                    <CopyButton text={payout.id} label="Copy Payout ID" />
                   </span>
                 </div>
 
@@ -600,19 +571,10 @@ export default function PayoutDetailsPage() {
                       <div className="flex items-center gap-2 font-mono font-medium text-gray-900">
                         <span>{value || line}</span>
                         {(value || line) && (
-                          <button
-                            onClick={() =>
-                              copyToClipboard(value || line, `bank-${index}`)
-                            }
-                            className="text-gray-400 hover:text-gray-700 transition"
-                            title="Copy"
-                          >
-                            {copiedKey === `bank-${index}` ? (
-                              <Check size={13} className="text-emerald-600" />
-                            ) : (
-                              <Copy size={13} />
-                            )}
-                          </button>
+                          <CopyButton
+                            text={value || line}
+                            label={`Copy ${label || "detail"}`}
+                          />
                         )}
                       </div>
                     </div>
@@ -663,7 +625,12 @@ export default function PayoutDetailsPage() {
                 <h4 className="font-bold text-gray-900 text-sm truncate">
                   {host.fullName || "Unknown Host"}
                 </h4>
-                <p className="text-xs text-gray-500 truncate">{host.email}</p>
+                <div className="flex items-center gap-1 min-w-0">
+                  <p className="text-xs text-gray-500 truncate">{host.email}</p>
+                  {host.email && (
+                    <CopyButton text={host.email} label="Copy Email" iconSize={11} />
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   {host.isVerifiedUser ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
@@ -681,15 +648,29 @@ export default function PayoutDetailsPage() {
             <div className="space-y-2.5 pt-2 border-t border-gray-100 text-xs">
               <div className="flex items-center justify-between text-gray-600">
                 <span>Phone Number</span>
-                <span className="font-medium text-gray-900">
-                  {host.phoneNumber || "Not set"}
-                </span>
+                <div className="flex items-center gap-1.5 font-medium text-gray-900">
+                  <span>{host.phoneNumber || "Not set"}</span>
+                  {host.phoneNumber && (
+                    <CopyButton
+                      text={host.phoneNumber}
+                      label="Copy Phone Number"
+                      iconSize={11}
+                    />
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between text-gray-600">
                 <span>Host ID</span>
-                <span className="font-mono text-gray-500 text-[11px]">
-                  #{host.id ? host.id.slice(-8) : "N/A"}
-                </span>
+                <div className="flex items-center gap-1.5 font-mono text-gray-500 text-[11px]">
+                  <span>#{host.id ? host.id.slice(-8) : "N/A"}</span>
+                  {host.id && (
+                    <CopyButton
+                      text={host.id}
+                      label="Copy Full Host ID"
+                      iconSize={11}
+                    />
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between text-gray-600">
                 <span>City / Region</span>

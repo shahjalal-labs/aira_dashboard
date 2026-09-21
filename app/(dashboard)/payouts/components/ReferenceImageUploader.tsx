@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useRef } from "react";
-import { UploadCloud, X, Info, Image as ImageIcon } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
+import {
+  UploadCloud,
+  X,
+  Info,
+  Image as ImageIcon,
+  ClipboardPaste,
+  FolderOpen,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface ReferenceImageUploaderProps {
@@ -16,29 +23,45 @@ export const ReferenceImageUploader: React.FC<ReferenceImageUploaderProps> = ({
   maxImages = 5,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Helper to filter, validate and append files
+  const addValidFiles = (newFiles: File[]) => {
+    if (images.length >= maxImages) {
+      toast.error(`Maximum ${maxImages} reference images already reached.`);
+      return;
+    }
+
+    const validFiles = newFiles.filter((file) => {
+      if (!file.type.startsWith("image/")) {
+        toast.warning(`"${file.name}" is not a valid image file.`);
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.warning(`"${file.name}" exceeds 5MB size limit.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    const availableSlots = maxImages - images.length;
+    const filesToAdd = validFiles.slice(0, availableSlots);
+
+    if (validFiles.length > availableSlots) {
+      toast.warning(
+        `Added only ${availableSlots} image(s) to stay within the limit of ${maxImages}.`,
+      );
+    }
+
+    onChange([...images, ...filesToAdd]);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const selectedFiles = Array.from(e.target.files);
-
-    if (images.length + selectedFiles.length > maxImages) {
-      toast.error(`Maximum ${maxImages} reference images allowed.`);
-      return;
-    }
-
-    // Filter valid image types
-    const validFiles = selectedFiles.filter((file) =>
-      file.type.startsWith("image/")
-    );
-
-    if (validFiles.length < selectedFiles.length) {
-      toast.warning("Some files were skipped because they are not valid images.");
-    }
-
-    if (validFiles.length > 0) {
-      onChange([...images, ...validFiles].slice(0, maxImages));
-    }
-
+    addValidFiles(selectedFiles);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -47,6 +70,127 @@ export const ReferenceImageUploader: React.FC<ReferenceImageUploaderProps> = ({
   const handleRemove = (index: number) => {
     onChange(images.filter((_, i) => i !== index));
   };
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      addValidFiles(droppedFiles);
+      toast.success(`${droppedFiles.length} file(s) dropped!`);
+    }
+  };
+
+  // Button click to read from clipboard directly
+  const handlePasteButtonClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (images.length >= maxImages) {
+      toast.error(`Maximum ${maxImages} reference images already reached.`);
+      return;
+    }
+
+    // Attempt navigator.clipboard.read() if available
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.clipboard &&
+      typeof navigator.clipboard.read === "function"
+    ) {
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        const foundImages: File[] = [];
+
+        for (let i = 0; i < clipboardItems.length; i++) {
+          const item = clipboardItems[i];
+          const imageType = item.types.find((t) => t.startsWith("image/"));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            const ext = imageType.split("/")[1]?.replace("+xml", "") || "png";
+            const file = new File(
+              [blob],
+              `receipt-paste-${Date.now()}-${i + 1}.${ext}`,
+              { type: imageType },
+            );
+            foundImages.push(file);
+          }
+        }
+
+        if (foundImages.length > 0) {
+          addValidFiles(foundImages);
+          toast.success(
+            `${foundImages.length} image(s) pasted from clipboard!`,
+          );
+          return;
+        } else {
+          toast.info(
+            "No image found in clipboard. Copy a screenshot first (e.g. Win+Shift+S or Cmd+Shift+4) and click Paste again or press Ctrl+V.",
+          );
+          return;
+        }
+      } catch (err) {
+        console.warn("navigator.clipboard.read() error:", err);
+      }
+    }
+
+    // Fallback info for environments where programmatic read is blocked (e.g. HTTP IP)
+    toast.info(
+      "Screenshot copied? Press Ctrl+V (or ⌘+V) anywhere on your keyboard to paste it directly!",
+    );
+  };
+
+  // Global window paste listener (Ctrl+V / Cmd+V anywhere in modal)
+  useEffect(() => {
+    const handleWindowPaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items || items.length === 0) return;
+
+      const pastedImages: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            const ext = file.type.split("/")[1]?.replace("+xml", "") || "png";
+            const renamed = new File(
+              [file],
+              `receipt-paste-${Date.now()}-${i + 1}.${ext}`,
+              { type: file.type },
+            );
+            pastedImages.push(renamed);
+          }
+        }
+      }
+
+      if (pastedImages.length > 0) {
+        e.preventDefault();
+        addValidFiles(pastedImages);
+        toast.success(
+          `${pastedImages.length} image(s) pasted from clipboard!`,
+        );
+      }
+    };
+
+    window.addEventListener("paste", handleWindowPaste);
+    return () => {
+      window.removeEventListener("paste", handleWindowPaste);
+    };
+  }, [images, maxImages]);
 
   return (
     <div className="space-y-2.5">
@@ -77,19 +221,60 @@ export const ReferenceImageUploader: React.FC<ReferenceImageUploaderProps> = ({
         className="hidden"
       />
 
-      {/* Upload Dropzone */}
+      {/* Upload Dropzone with Paste & Browse options */}
       {images.length < maxImages && (
         <div
-          onClick={() => fileInputRef.current?.click()}
-          className="border border-dashed border-gray-300 hover:border-emerald-500 rounded-xl p-3 text-center cursor-pointer transition bg-gray-50/60 hover:bg-emerald-50/20 group"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-xl p-3.5 text-center transition-all bg-gray-50/70 ${
+            isDragging
+              ? "border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-400/20 scale-[1.01]"
+              : "border-gray-300 hover:border-emerald-500 hover:bg-emerald-50/20"
+          }`}
         >
-          <div className="flex flex-col items-center justify-center gap-1">
-            <UploadCloud className="w-5 h-5 text-gray-400 group-hover:text-emerald-600 transition" />
-            <p className="text-xs font-medium text-gray-600 group-hover:text-emerald-700">
-              Click to select or drag transfer receipts
+          <div className="flex flex-col items-center justify-center gap-2">
+            <UploadCloud
+              className={`w-6 h-6 transition-colors ${
+                isDragging ? "text-emerald-600" : "text-gray-400"
+              }`}
+            />
+            <p className="text-xs font-medium text-gray-700">
+              Drag & drop transfer receipts here, or:
             </p>
-            <p className="text-[10px] text-gray-400">
-              PNG, JPG, WebP up to 5MB each ({maxImages - images.length} remaining)
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer active:scale-95"
+              >
+                <FolderOpen className="w-3.5 h-3.5 text-gray-500" />
+                Browse Files
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePasteButtonClick}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer active:scale-95"
+              >
+                <ClipboardPaste className="w-3.5 h-3.5 text-emerald-600" />
+                Paste from Clipboard
+              </button>
+            </div>
+
+            {/* Keyboard shortcut hint */}
+            <p className="text-[10px] text-gray-400 pt-0.5 flex items-center justify-center gap-1">
+              or press{" "}
+              <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-[10px] font-mono text-gray-600 shadow-2xs">
+                Ctrl+V
+              </kbd>{" "}
+              /{" "}
+              <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-[10px] font-mono text-gray-600 shadow-2xs">
+                ⌘+V
+              </kbd>{" "}
+              anywhere ({maxImages - images.length} remaining)
             </p>
           </div>
         </div>
@@ -113,7 +298,7 @@ export const ReferenceImageUploader: React.FC<ReferenceImageUploaderProps> = ({
                 <button
                   type="button"
                   onClick={() => handleRemove(idx)}
-                  className="absolute top-1 right-1 bg-black/70 hover:bg-red-600 text-white p-0.5 rounded-full transition shadow"
+                  className="absolute top-1 right-1 bg-black/70 hover:bg-red-600 text-white p-0.5 rounded-full transition shadow cursor-pointer"
                   title="Remove image"
                 >
                   <X className="w-3 h-3" />
